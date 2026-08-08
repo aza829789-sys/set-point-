@@ -247,11 +247,11 @@ const BACKGROUNDS = [
 ];
 
 const TIERS = {
-  challenger:{ label:'Challenger', baseOpp:34, oppInc:6, points:[3,8,18,35,65], prize:[400,900,2000,4200,9000], energyCost:8 },
-  atp250:{ label:'ATP 250', baseOpp:47, oppInc:6, points:[5,10,20,45,90,150], prize:[3000,6000,12000,25000,55000,120000], energyCost:10 },
-  atp500:{ label:'ATP 500', baseOpp:57, oppInc:6, points:[8,16,35,70,140,250], prize:[6000,12000,25000,50000,110000,250000], energyCost:11 },
-  masters:{ label:'Masters 1000', baseOpp:67, oppInc:5, points:[10,20,45,90,180,360,600], prize:[15000,30000,60000,120000,250000,500000,1100000], energyCost:13 },
-  slam:{ label:'Grand Chelem', baseOpp:74, oppInc:5, points:[10,45,90,180,360,720,1200,2000], prize:[60000,120000,220000,400000,700000,1300000,2400000,3000000], energyCost:16 },
+  challenger:{ label:'Challenger', baseOpp:27, oppInc:4, points:[3,8,18,35,65], prize:[400,900,2000,4200,9000], energyCost:6 },
+  atp250:{ label:'ATP 250', baseOpp:39, oppInc:4, points:[5,10,20,45,90,150], prize:[3000,6000,12000,25000,55000,120000], energyCost:8 },
+  atp500:{ label:'ATP 500', baseOpp:49, oppInc:4, points:[8,16,35,70,140,250], prize:[6000,12000,25000,50000,110000,250000], energyCost:9 },
+  masters:{ label:'Masters 1000', baseOpp:59, oppInc:4, points:[10,20,45,90,180,360,600], prize:[15000,30000,60000,120000,250000,500000,1100000], energyCost:11 },
+  slam:{ label:'Grand Chelem', baseOpp:67, oppInc:4, points:[10,45,90,180,360,720,1200,2000], prize:[60000,120000,220000,400000,700000,1300000,2400000,3000000], energyCost:13 }
 };
 
 const RANK_BANDS = [
@@ -274,6 +274,74 @@ function pointsToRank(points){
 }
 
 /* Textes courts et simples pour chaque événement */
+
+const FUNNY_EVENTS = [
+  {id:'funny_cat',min:16,max:24,title:'Un chat envahit le court',text:'Un chat s’installe sur la ligne de fond. Il refuse catégoriquement de bouger.',choices:[
+    {label:'Attendre',tag:'Fair-play',desc:'Le chat finit par partir.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Un chat a interrompu votre entraînement.');}},
+    {label:'Jouer autour',tag:'Concentration',desc:'Vous apprenez à viser entre les moustaches.',effect:p=>{p.stats.mental+=2;log(p,'Vous avez joué avec un chat comme arbitre.');}}
+  ]},
+  {id:'funny_ballboy',min:16,max:25,title:'Le ramasseur superstar',text:'Un ramasseur renvoie une balle avec un effet si étrange que tout le monde applaudit.',choices:[
+    {label:'Le féliciter',tag:'Classe',desc:'Une petite vidéo devient virale.',effect:p=>{p.rep=clamp(p.rep+4,0,100);p.morale=clamp(p.morale+3,0,100);log(p,'Un ramasseur est devenu la star du jour.');}},
+    {label:'Demander le secret',tag:'Technique',desc:'Il répond : « Je lance juste fort. »',effect:p=>{p.stats.technique+=2;log(p,'Vous avez reçu un conseil technique improbable.');}}
+  ]},
+  {id:'funny_banana',min:16,max:26,title:'La banane officielle',text:'Un spectateur vous tend une banane pendant l’échauffement comme si c’était un trophée.',choices:[
+    {label:'La prendre',tag:'Nutrition',desc:'Votre carrière vient de gagner une banane.',effect:p=>{p.energy=clamp(p.energy+5,0,100);log(p,'Une banane vous a été offerte en tribune.');}},
+    {label:'Refuser poliment',tag:'Élégance',desc:'Vous gardez votre routine.',effect:p=>{p.mental+=1;log(p,'Vous avez décliné une banane très sérieusement.');}}
+  ]},
+  {id:'funny_towel',min:16,max:28,title:'La serviette porte-bonheur',text:'Vous perdez votre serviette. Elle est retrouvée dans le sac d’un joueur que vous ne connaissez pas.',choices:[
+    {label:'La récupérer',tag:'Mystère',desc:'Personne ne comprend comment.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Votre serviette a voyagé plus que vous.');}},
+    {label:'En prendre une neuve',tag:'Professionnel',desc:'Vous investissez 12 € dans la paix intérieure.',effect:p=>{p.money=Math.max(0,p.money-12);log(p,'Nouvelle serviette, nouvelle vie.');}}
+  ]},
+  {id:'funny_mic',min:16,max:30,title:'Le micro reste allumé',text:'Vous pensez que l’interview est terminée. Le micro est encore ouvert.',choices:[
+    {label:'Rester naturel',tag:'Sincérité',desc:'Votre phrase devient un petit meme.',effect:p=>{p.rep=clamp(p.rep+5,0,100);log(p,'Votre micro est resté ouvert au mauvais moment.');}},
+    {label:'Faire comme si',tag:'Sang-froid',desc:'Personne ne saura jamais.',effect:p=>{p.stats.mental+=2;log(p,'Vous avez survécu à un micro ouvert.');}}
+  ]},
+  {id:'funny_weather',min:16,max:30,title:'Pluie de confettis',text:'Un mariage à côté du club déclenche une pluie de confettis sur votre terrain.',choices:[
+    {label:'Continuer',tag:'Focus',desc:'Vous jouez sous les confettis.',effect:p=>{p.stats.mental+=2;p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez joué sous une pluie de confettis.');}},
+    {label:'Faire une pause',tag:'Spectacle',desc:'Tout le monde prend une photo.',effect:p=>{p.rep=clamp(p.rep+3,0,100);log(p,'Votre entraînement est devenu une séance photo.');}}
+  ]},
+  {id:'funny_wronghotel',min:17,max:29,title:'Mauvais hôtel',text:'Vous entrez dans le mauvais hôtel avec votre sac de tennis. Personne ne vous arrête.',choices:[
+    {label:'Continuer',tag:'Aventure',desc:'Vous découvrez le meilleur petit-déjeuner de la ville.',effect:p=>{p.energy=clamp(p.energy+3,0,100);p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez dormi dans le mauvais hôtel.');}},
+    {label:'Faire demi-tour',tag:'Prudence',desc:'Retour au bon hôtel, sans explication.',effect:p=>{p.stats.mental+=1;log(p,'Vous avez retrouvé votre hôtel à temps.');}}
+  ]},
+  {id:'funny_dog',min:16,max:28,title:'Le chien veut jouer',text:'Un chien récupère une balle et refuse de la rendre pendant l’entraînement.',choices:[
+    {label:'Lancer une autre balle',tag:'Diplomatie',desc:'Problème réglé en 4 secondes.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Un chien a remporté un échange.');}},
+    {label:'Négocier',tag:'Mental',desc:'Vous découvrez que le chien ne négocie pas.',effect:p=>{p.stats.mental+=2;log(p,'Négociation perdue contre un chien.');}}
+  ]},
+  {id:'funny_celebrity',min:18,max:30,title:'Une célébrité vous confond',text:'Une célébrité vous demande un autographe. Elle pense que vous êtes déjà une star.',choices:[
+    {label:'Signer',tag:'Confiance',desc:'Vous signez sans corriger l’erreur.',effect:p=>{p.morale=clamp(p.morale+8,0,100);log(p,'Vous avez signé un autographe par erreur.');}},
+    {label:'Expliquer',tag:'Humilité',desc:'Vous expliquez que vous êtes encore classé loin.',effect:p=>{p.mental+=1;log(p,'Une célébrité vous a pris pour une star.');}}
+  ]},
+  {id:'funny_ball',min:16,max:27,title:'La balle disparaît',text:'Une balle frappe une bâche et disparaît pendant cinq minutes.',choices:[
+    {label:'La chercher',tag:'Patience',desc:'Vous la retrouvez derrière une glacière.',effect:p=>{p.stats.mental+=1;log(p,'Une balle a disparu pendant l’entraînement.');}},
+    {label:'En prendre une autre',tag:'Efficacité',desc:'Vous avez perdu 90 secondes.',effect:p=>{p.energy=clamp(p.energy+1,0,100);log(p,'Une balle a été officiellement déclarée disparue.');}}
+  ]},
+  {id:'funny_wrongname',min:16,max:30,title:'Votre nom est mal écrit',text:'Le tableau affiche votre nom avec une faute. Une énorme faute.',choices:[
+    {label:'Rire',tag:'Détente',desc:'La photo circule dans le vestiaire.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Le tableau a massacré votre nom.');}},
+    {label:'Corriger',tag:'Sérieux',desc:'Le tableau est réparé avant le match.',effect:p=>{p.rep=clamp(p.rep+2,0,100);log(p,'Votre nom a été corrigé sur le tableau.');}}
+  ]},
+  {id:'funny_pigeon',min:16,max:30,title:'Un pigeon sur la chaise',text:'Un pigeon s’installe sur votre chaise de repos et ne veut plus partir.',choices:[
+    {label:'Lui laisser la place',tag:'Respect',desc:'Vous êtes officiellement le deuxième joueur du match.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Un pigeon a pris votre chaise.');}},
+    {label:'Récupérer la chaise',tag:'Autorité',desc:'Le pigeon gagne le duel psychologique.',effect:p=>{p.stats.mental+=1;log(p,'Vous avez perdu un duel contre un pigeon.');}}
+  ]},
+  {id:'funny_music',min:16,max:28,title:'La mauvaise musique',text:'La musique du court lance une chanson beaucoup trop entraînante juste avant votre séance.',choices:[
+    {label:'Danser 10 secondes',tag:'Énergie',desc:'Le coach fait semblant de ne rien voir.',effect:p=>{p.energy=clamp(p.energy+4,0,100);p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez dansé avant l’entraînement.');}},
+    {label:'Rester sérieux',tag:'Discipline',desc:'Vous ne bougez pas d’un centimètre.',effect:p=>{p.mental+=2;log(p,'Vous avez résisté à la musique.');}}
+  ]},
+  {id:'funny_icecream',min:16,max:27,title:'La glace du tournoi',text:'Le vendeur vous offre une glace parce qu’il pense que vous avez gagné le tournoi.',choices:[
+    {label:'Accepter',tag:'Récompense',desc:'Vous n’avez même pas joué la finale.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Une glace vous a été offerte par erreur.');}},
+    {label:'Expliquer',tag:'Honnêteté',desc:'Le vendeur vous offre quand même un cornet.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Vous avez refusé de vous faire passer pour un champion.');}}
+  ]},
+  {id:'funny_umbrella',min:16,max:29,title:'Parapluie géant',text:'Un spectateur ouvre un parapluie immense au bord du court. Vous ne voyez plus la ligne.',choices:[
+    {label:'Demander gentiment',tag:'Fair-play',desc:'Le parapluie descend immédiatement.',effect:p=>{p.morale=clamp(p.morale+2,0,100);log(p,'Un parapluie a bloqué votre vision.');}},
+    {label:'Viser au hasard',tag:'Improvisation',desc:'Étonnamment, vous gagnez un point.',effect:p=>{p.stats.technique+=1;log(p,'Vous avez joué un point sans voir la ligne.');}}
+  ]},
+  {id:'funny_raincoat',min:16,max:28,title:'Le k-way porte-malheur',text:'Votre coach vous interdit un k-way précis. Vous ne savez pas pourquoi.',choices:[
+    {label:'L’écouter',tag:'Coach',desc:'Vous jouez avec votre équipement habituel.',effect:p=>{p.mental+=1;log(p,'Le coach a déclaré un k-way maudit.');}},
+    {label:'Le porter quand même',tag:'Provocation',desc:'Il ne se passe absolument rien.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez défié la légende du k-way maudit.');}}
+  ]}
+];
+
 const EVENTS = [
   { id:'academie_offer', min:16, max:18,
     title:'Une académie vous repère',
@@ -383,7 +451,7 @@ function injure(p, zone){
 let creation = { name:'', nation:null, style:null, background:null };
 
 function newPlayer(){
-  const base = 38;
+  const base = 42;
   const stats = { technique:base+rand(-3,3), service:base+rand(-3,3), physique:base+rand(-3,3), mental:base+rand(-3,3) };
   [creation.style.mod, creation.background.mod].forEach(mod=>{
     for(const k in mod){ stats[k] = clamp(stats[k] + mod[k], 5, 95); }
@@ -416,7 +484,7 @@ function planSeason(rank, intensityId){
 }
 function skillOf(p){
   const s = p.stats;
-  const base = s.technique*0.28 + s.service*0.24 + s.physique*0.22 + s.mental*0.26;
+  const base = s.technique*0.28 + s.service*0.24 + s.physique*0.22 + s.mental*0.26 + 6;
   const form = (0.78 + 0.4*(p.energy/100)) * (0.85 + 0.3*(p.morale/100));
   return base * form;
 }
@@ -426,8 +494,8 @@ function simulateTournament(p, tierId){
   let roundsWon = 0;
   for(let r=0; r<tier.points.length-1; r++){
     const oppSkill = tier.baseOpp + r*tier.oppInc + rand(-6,6);
-    const eff = baseSkill + rand(-7,7);
-    let winProb = clamp(eff/(eff+oppSkill), 0.08, 0.9);
+    const eff = baseSkill + rand(-5,5) + 3;
+    let winProb = clamp(eff/(eff+oppSkill), 0.18, 0.94);
     if(Math.random() < winProb){ roundsWon++; } else { break; }
   }
   const points = tier.points[roundsWon];
@@ -471,7 +539,7 @@ function runSeason(p, intensityId){
     seasonPoints += res.points;
     seasonPrize += res.prize;
     if(res.champion){ p.titles[tierId]++; titlesThisSeason.push(res.tierLabel); }
-    const injuryChance = 3 + (100-p.stats.physique)*0.18 + (100-p.energy)*0.15 + (intensityId==='intensif'?4:0);
+    const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + (intensityId==='intensif'?2:0);
     if(rand(1,100) <= injuryChance){ injure(p, choose(['cheville','genou','épaule','dos','poignet'])); break; }
   }
   p.money += seasonPrize;
@@ -659,9 +727,15 @@ function creationNext(){
 
 function startCareer(){ player = newPlayer(); usedEvents = []; render(); }
 function pickEvent(p){
-  let pool = EVENTS.filter(e => p.age>=e.min && p.age<=e.max && !usedEvents.includes(e.id));
-  if(!pool.length){ usedEvents = []; pool = EVENTS.filter(e => p.age>=e.min && p.age<=e.max); }
-  if(!pool.length) pool = EVENTS;
+  const funnyPool = FUNNY_EVENTS.filter(e => p.age>=e.min && p.age<=e.max && !usedEvents.includes(e.id));
+  const seriousPool = EVENTS.filter(e => p.age>=e.min && p.age<=e.max && !usedEvents.includes(e.id));
+  // 72% de faits divers improbables au début de carrière, 28% d'événements classiques.
+  let pool = Math.random() < 0.72 ? funnyPool : seriousPool;
+  if(!pool.length) pool = funnyPool.length ? funnyPool : seriousPool;
+  if(!pool.length){
+    usedEvents = [];
+    pool = Math.random() < 0.72 ? FUNNY_EVENTS : EVENTS;
+  }
   const ev = choose(pool);
   usedEvents.push(ev.id);
   return ev;
