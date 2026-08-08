@@ -594,7 +594,7 @@ function newPlayer(){
     nation: creation.nation, style: creation.style, background: creation.background,
     age:16, season:1, stats,
     energy:85, morale:65, rep:creation.background.rep, money:creation.background.money,
-    points:0, rank:1400, prevRank:1400,
+    points:650, rank:250, prevRank:250,
     titles:{ challenger:0, atp250:0, atp500:0, masters:0, slam:0 },
     bestRank:1400, sponsors:0, injuries:[], seasonsPlayed:0,
     journal:[], phase:'event', retired:false, forcedRetire:false, skipSeason:false, lastRecap:null,
@@ -642,8 +642,8 @@ function simulateTournament(p, tierId){
   let roundsWon = 0;
   for(let r=0; r<tier.points.length-1; r++){
     const oppSkill = tier.baseOpp + r*tier.oppInc + rand(-6,6);
-    const eff = baseSkill + rand(-5,5) + 3;
-    let winProb = clamp(eff/(eff+oppSkill), 0.18, 0.94);
+    const eff = baseSkill + rand(-5,5) + 12;
+    let winProb = clamp(eff/(eff+oppSkill), 0,25, 0.98);
     if(Math.random() < winProb){ roundsWon++; } else { break; }
   }
   const points = tier.points[roundsWon];
@@ -696,7 +696,7 @@ function runSeason(p, intensityId){
   p.rank = pointsToRank(p.points);
   if(p.rank < p.bestRank) p.bestRank = p.rank;
   p.seasonsPlayed++;
-  p.energy = clamp(p.energy + 35, 0, 100);
+  p.energy = clamp(p.energy + 55, 0, 100);
   p.morale = clamp(p.morale + (p.morale<55 ? 8 : 2), 0, 100);
   p.lastRecap = {
     intensity: CALENDAR_OPTIONS.find(c=>c.id===intensityId).label,
