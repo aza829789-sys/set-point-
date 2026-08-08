@@ -584,7 +584,7 @@ function injure(p, zone){
 let creation = { name:'', nation:null, style:null, background:null };
 
 function newPlayer(){
-  const base = 42;
+  const base = 55;
   const stats = { technique:base+rand(-3,3), service:base+rand(-3,3), physique:base+rand(-3,3), mental:base+rand(-3,3) };
   [creation.style.mod, creation.background.mod].forEach(mod=>{
     for(const k in mod){ stats[k] = clamp(stats[k] + mod[k], 5, 95); }
