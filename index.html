@@ -187,6 +187,7 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .badge .d{font-size:11.5px; color:var(--muted); line-height:1.4;}
 
 .actions{display:flex; gap:12px; margin-top:20px; flex-wrap:wrap;}
+.creation-progress{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 24px}.creation-progress span{height:4px;background:var(--line);border-radius:5px}.creation-progress span.on{background:var(--ball)}
 .footer-note{text-align:center; color:var(--muted); font-size:11.5px; margin-top:32px;}
 </style>
 </head>
@@ -540,60 +541,122 @@ function renderIntro(){
     <div class="hero">
       <div class="ball-hero">${BALL_ICON(52)}</div>
       <h1>Set <span>Point</span></h1>
-      <p>Incarnez un joueur de tennis, de 16 ans jusqu'à la retraite. Chaque saison, vous faites des choix. Le circuit fait le reste.</p>
+      <p>Votre carrière. Votre classement. Votre histoire.</p>
       <button class="btn" onclick="goToCreation()">Commencer une carrière</button>
     </div>
     <div class="footer-note">Gratuit · dans le navigateur · aucune inscription</div>
   `;
 }
 function goToCreation(){
-  creation = { name:'', nation:NATIONS[0], style:STYLES[0], background:BACKGROUNDS[0] };
+  creation = { name:'', nation:NATIONS[0], style:STYLES[0], background:BACKGROUNDS[0], step:0 };
   renderCreation();
 }
 function renderCreation(){
+  const steps = 6;
+  let content = '';
+
+  if(creation.step === 0){
+    content = `
+      <div class="eyebrow">Création · 1/5</div>
+      <div class="stage-h">Votre nom</div>
+      <div class="stage-p">Simple. Comme sur une feuille de match.</div>
+      <div class="field"><input type="text" id="nameInput" placeholder="Prénom Nom" value="${creation.name}"></div>
+    `;
+  } else if(creation.step === 1){
+    content = `
+      <div class="eyebrow">Création · 2/5</div>
+      <div class="stage-h">Nationalité</div>
+      <div class="stage-p">Choisissez votre pays.</div>
+      <div class="opt-grid" id="nationGrid"></div>
+    `;
+  } else if(creation.step === 2){
+    content = `
+      <div class="eyebrow">Création · 3/5</div>
+      <div class="stage-h">Style de jeu</div>
+      <div class="stage-p">Votre identité sur le court.</div>
+      <div class="opt-grid" id="styleGrid"></div>
+    `;
+  } else if(creation.step === 3){
+    content = `
+      <div class="eyebrow">Création · 4/5</div>
+      <div class="stage-h">Formation</div>
+      <div class="stage-p">Comment avez-vous appris à jouer ?</div>
+      <div class="opt-grid" id="bgGrid"></div>
+    `;
+  } else if(creation.step === 4){
+    content = `
+      <div class="eyebrow">Création · 5/5</div>
+      <div class="stage-h">Prêt pour le circuit</div>
+      <div class="recap-row"><span class="l">Joueur</span><span class="r">${creation.name || 'Joueur'}</span></div>
+      <div class="recap-row"><span class="l">Pays</span><span class="r">${creation.nation.label}</span></div>
+      <div class="recap-row"><span class="l">Style</span><span class="r">${creation.style.label}</span></div>
+      <div class="recap-row"><span class="l">Formation</span><span class="r">${creation.background.label}</span></div>
+    `;
+  }
+
   app.innerHTML = `
-    <div class="card" style="max-width:620px; margin:26px auto;">
-      <div class="eyebrow">Nouveau joueur</div>
-      <div class="stage-h">Qui allez-vous devenir ?</div>
-      <div class="field">
-        <label>Prénom</label>
-        <input type="text" id="nameInput" placeholder="ex. Léa Fontaine" value="${creation.name}">
-      </div>
-      <div class="field"><label>Nationalité</label><div class="opt-grid" id="nationGrid"></div></div>
-      <div class="field"><label>Style de jeu</label><div class="opt-grid" id="styleGrid"></div></div>
-      <div class="field"><label>Formation</label><div class="opt-grid" id="bgGrid"></div></div>
+    <div class="card" style="max-width:620px;margin:26px auto;">
+      <div class="creation-progress">${Array.from({length:steps},(_,i)=>`<span class="${i<=creation.step?'on':''}"></span>`).join('')}</div>
+      ${content}
       <div class="actions">
-        <button class="btn" onclick="startCareer()">Entrer sur le circuit à 16 ans</button>
-        <button class="btn outline" onclick="player=null; render()">Retour</button>
+        ${creation.step>0 ? `<button class="btn outline" onclick="creation.step--; renderCreation()">←</button>` : `<button class="btn outline" onclick="player=null; render()">Retour</button>`}
+        ${creation.step===0 ? `<button class="btn" onclick="creationNext()">Continuer →</button>` : ''}
+        ${creation.step===4 ? `<button class="btn" onclick="startCareer()">Entrer sur le circuit</button>` : ''}
       </div>
     </div>
   `;
-  const nationGrid = document.getElementById('nationGrid');
-  NATIONS.forEach(n=>{
-    const d = document.createElement('div');
-    d.className = 'opt' + (creation.nation.id===n.id ? ' sel':'');
-    d.innerHTML = `<div class="h">${n.label}</div><div class="d">${n.slam ? 'Tournoi à domicile : '+n.slam : 'Pas de tournoi à domicile'}</div>`;
-    d.onclick = ()=>{ creation.nation = n; renderCreation(); };
-    nationGrid.appendChild(d);
-  });
-  const styleGrid = document.getElementById('styleGrid');
-  STYLES.forEach(s=>{
-    const d = document.createElement('div');
-    d.className = 'opt' + (creation.style.id===s.id ? ' sel':'');
-    d.innerHTML = `<div class="h">${s.label}</div><div class="d">${s.desc}</div>`;
-    d.onclick = ()=>{ creation.style = s; renderCreation(); };
-    styleGrid.appendChild(d);
-  });
-  const bgGrid = document.getElementById('bgGrid');
-  BACKGROUNDS.forEach(b=>{
-    const d = document.createElement('div');
-    d.className = 'opt' + (creation.background.id===b.id ? ' sel':'');
-    d.innerHTML = `<div class="h">${b.label}</div><div class="d">${b.desc}</div>`;
-    d.onclick = ()=>{ creation.background = b; renderCreation(); };
-    bgGrid.appendChild(d);
-  });
-  document.getElementById('nameInput').addEventListener('input', e=>{ creation.name = e.target.value; });
+
+  if(creation.step===0){
+    const input=document.getElementById('nameInput');
+    input.addEventListener('input',e=>creation.name=e.target.value);
+    input.focus();
+  }
+
+  if(creation.step===1){
+    const grid=document.getElementById('nationGrid');
+    NATIONS.forEach(n=>{
+      const d=document.createElement('div');
+      d.className='opt'+(creation.nation.id===n.id?' sel':'');
+      d.innerHTML=`<div class="h">${n.label}</div><div class="d">${n.slam || 'Circuit international'}</div>`;
+      d.onclick=()=>{creation.nation=n; creation.step=2; renderCreation();};
+      grid.appendChild(d);
+    });
+  }
+
+  if(creation.step===2){
+    const grid=document.getElementById('styleGrid');
+    STYLES.forEach(x=>{
+      const d=document.createElement('div');
+      d.className='opt'+(creation.style.id===x.id?' sel':'');
+      d.innerHTML=`<div class="h">${x.label}</div><div class="d">${x.desc}</div>`;
+      d.onclick=()=>{creation.style=x; creation.step=3; renderCreation();};
+      grid.appendChild(d);
+    });
+  }
+
+  if(creation.step===3){
+    const grid=document.getElementById('bgGrid');
+    BACKGROUNDS.forEach(x=>{
+      const d=document.createElement('div');
+      d.className='opt'+(creation.background.id===x.id?' sel':'');
+      d.innerHTML=`<div class="h">${x.label}</div><div class="d">${x.desc}</div>`;
+      d.onclick=()=>{creation.background=x; creation.step=4; renderCreation();};
+      grid.appendChild(d);
+    });
+  }
 }
+
+function creationNext(){
+  const input=document.getElementById('nameInput');
+  creation.name=input ? input.value.trim() : creation.name;
+  if(!creation.name){
+    input && input.focus();
+    return;
+  }
+  creation.step=1;
+  renderCreation();
+}
+
 function startCareer(){ player = newPlayer(); usedEvents = []; render(); }
 function pickEvent(p){
   let pool = EVENTS.filter(e => p.age>=e.min && p.age<=e.max && !usedEvents.includes(e.id));
