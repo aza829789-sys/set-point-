@@ -294,8 +294,8 @@ const BACKGROUNDS = [
 ];
 
 const TIERS = {
-  challenger:{ label:'Challenger', baseOpp:27, oppInc:4, points:[3,8,18,35,65], prize:[400,900,2000,4200,9000], energyCost:6 },
-  atp250:{ label:'ATP 250', baseOpp:39, oppInc:4, points:[5,10,20,45,90,150], prize:[3000,6000,12000,25000,55000,120000], energyCost:8 },
+  challenger:{ label:'Challenger', baseOpp:27, oppInc:4, points:[5,12,25,45,80], prize:[400,900,2000,4200,9000], energyCost:6 },
+  atp250:{ label:'ATP 250', baseOpp:39, oppInc:4, points:[8,16,30,55,105,170], prize:[3000,6000,12000,25000,55000,120000], energyCost:8 },
   atp500:{ label:'ATP 500', baseOpp:49, oppInc:4, points:[8,16,35,70,140,250], prize:[6000,12000,25000,50000,110000,250000], energyCost:9 },
   masters:{ label:'Masters 1000', baseOpp:59, oppInc:4, points:[10,20,45,90,180,360,600], prize:[15000,30000,60000,120000,250000,500000,1100000], energyCost:11 },
   slam:{ label:'Grand Chelem', baseOpp:67, oppInc:4, points:[10,45,90,180,360,720,1200,2000], prize:[60000,120000,220000,400000,700000,1300000,2400000,3000000], energyCost:13 }
@@ -571,11 +571,14 @@ function planSeason(rank, intensityId){
   const mult = intensityId==='leger' ? 0.55 : intensityId==='intensif' ? 1.6 : 1;
   const fill = (tier,n) => Array(Math.max(0, Math.round(n*mult))).fill(tier);
   let plan = [];
-  if(rank>350) plan = fill('challenger', 7);
-  else if(rank>150) plan = [...fill('challenger',3), ...fill('atp250',3)];
-  else if(rank>60) plan = [...fill('atp250',3), ...fill('atp500',2), ...fill('slam', Math.min(4,Math.round(2*mult)))];
-  else if(rank>20) plan = [...fill('atp500',2), ...fill('masters',3), ...fill('slam', Math.min(4,Math.round(3*mult)))];
-  else plan = [...fill('masters',4), ...fill('slam',4), ...fill('atp500',2)];
+  // Progression souple : on débloque les catégories avant d'être déjà
+  // tout en haut du classement. Le joueur ne reste pas coincé en Challenger.
+  if(rank>800) plan = [...fill('challenger',5), ...fill('atp250',1)];
+  else if(rank>450) plan = [...fill('challenger',4), ...fill('atp250',3)];
+  else if(rank>250) plan = [...fill('challenger',2), ...fill('atp250',4), ...fill('atp500',1)];
+  else if(rank>120) plan = [...fill('atp250',2), ...fill('atp500',3), ...fill('masters',1), ...fill('slam', Math.min(2,Math.round(1*mult)))];
+  else if(rank>50) plan = [...fill('atp500',2), ...fill('masters',3), ...fill('slam', Math.min(3,Math.round(2*mult)))];
+  else plan = [...fill('atp500',2), ...fill('masters',4), ...fill('slam',4)];
   let slamCount=0;
   plan = plan.filter(t=>{ if(t==='slam'){ slamCount++; return slamCount<=4; } return true; });
   return plan;
@@ -641,7 +644,7 @@ function runSeason(p, intensityId){
     if(rand(1,100) <= injuryChance){ injure(p, choose(['cheville','genou','épaule','dos','poignet'])); break; }
   }
   p.money += seasonPrize;
-  p.points = Math.round(p.points*0.55 + seasonPoints);
+  p.points = Math.round(p.points*0.88 + seasonPoints);
   p.prevRank = p.rank;
   p.rank = pointsToRank(p.points);
   if(p.rank < p.bestRank) p.bestRank = p.rank;
