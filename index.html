@@ -35,7 +35,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .mono{font-family:'Space Mono', monospace;}
 .wrap{max-width:960px; margin:0 auto;}
 
-/* ---------- icônes SVG maison ---------- */
 .icon-ball{display:inline-block; vertical-align:middle;}
 .court-divider{
   width:100%; height:14px; margin:18px 0;
@@ -46,7 +45,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
   background-position-y:6px;
 }
 
-/* ---------- bandeau haut ---------- */
 .topbar{
   background:var(--net);
   border-radius:16px;
@@ -73,7 +71,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .rank-delta.down{color:#F0897C;}
 .rank-delta.flat{color:#B9C9D6;}
 
-/* ---------- layout ---------- */
 .grid{display:grid; grid-template-columns:270px 1fr; gap:16px;}
 @media(max-width:740px){.grid{grid-template-columns:1fr;}}
 .card{
@@ -85,7 +82,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 }
 .card + .card{margin-top:16px;}
 
-/* ---------- carte joueur ---------- */
 .player-name{font-size:19px; font-weight:700;}
 .player-sub{font-size:12.5px; color:var(--muted); margin-bottom:16px;}
 .stat{margin-bottom:10px;}
@@ -103,7 +99,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .badge-row span{font-size:11px; padding:4px 8px; border-radius:20px; background:#EEF3EA; color:var(--muted); font-weight:500;}
 .badge-row span.has{background:var(--ball); color:var(--ink);}
 
-/* ---------- zone principale ---------- */
 .eyebrow{font-size:12px; color:var(--clay); font-weight:600; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;}
 .stage-h{font-size:22px; font-weight:700; margin-bottom:10px;}
 .stage-p{font-size:15.5px; line-height:1.6; color:#37493D; margin-bottom:18px;}
@@ -143,14 +138,12 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 }
 .result.title{border-left-color:var(--gold); background:#FBF4E4; font-weight:600;}
 
-/* ---------- journal ---------- */
 .journal{max-height:210px; overflow-y:auto; display:flex; flex-direction:column-reverse; gap:8px;}
 .journal-item{font-size:12.5px; color:var(--muted); padding-left:10px; border-left:2px solid var(--line);}
 .journal-item b{color:var(--ink);}
 .journal::-webkit-scrollbar{width:5px;}
 .journal::-webkit-scrollbar-thumb{background:var(--line); border-radius:3px;}
 
-/* ---------- accueil ---------- */
 .hero{text-align:center; padding:50px 10px 20px;}
 .hero .ball-hero{margin-bottom:18px;}
 .hero h1{font-size:44px; font-weight:800; margin-bottom:14px; line-height:1.05;}
@@ -172,7 +165,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .opt.sel{border-color:var(--ball-dark); background:#F4FADF;}
 .opt.sel .h{color:var(--net);}
 
-/* ---------- fin de carrière ---------- */
 .rating{
   text-align:center; padding:24px 10px; margin-bottom:20px; background:#F9FBF7;
   border:1px solid var(--line); border-radius:16px;
@@ -190,7 +182,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .creation-progress{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:0 0 24px}.creation-progress span{height:4px;background:var(--line);border-radius:5px}.creation-progress span.on{background:var(--ball)}
 .footer-note{text-align:center; color:var(--muted); font-size:11.5px; margin-top:32px;}
 
-/* Safe responsive layer: no game logic changes */
 html,body{width:100%;max-width:100%;overflow-x:hidden}
 *{box-sizing:border-box}
 button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
@@ -235,7 +226,6 @@ img,svg,canvas{max-width:100%}
   .grid{grid-template-columns:280px minmax(0,1fr);align-items:start}
   .card{min-width:0}
 }
-
 
 .decision-gain{margin:0 0 14px;padding:12px 14px;border:1px solid #dfe7df;border-radius:12px;background:#f7faf7}
 .decision-gain b{font-size:12px;text-transform:uppercase;letter-spacing:.08em}
@@ -314,16 +304,6 @@ const RANK_BANDS = [
   [150, 650], [50, 900], [0, 1400]
 ];
 
-
-function guaranteeSlamOpportunity(p,plan){
-  const age=p.age||16;
-  const avg=(p.stats.technique+p.stats.service+p.stats.physique+p.stats.mental)/4;
-  if(age>=22 && avg>=50 && !plan.some(x=>x.type==='slam')){
-    plan[plan.length-1]={type:'slam',round:0};
-  }
-  return plan;
-}
-
 function snapshotStats(p){
   return {technique:p.stats.technique,service:p.stats.service,physique:p.stats.physique,mental:p.stats.mental,morale:p.morale,energy:p.energy,rep:p.rep,money:p.money};
 }
@@ -368,7 +348,7 @@ const FUNNY_EVENTS = [
   ]},
   {id:'funny_banana',min:16,max:26,title:'La banane officielle',text:'Un spectateur vous tend une banane pendant l’échauffement comme si c’était un trophée.',choices:[
     {label:'La prendre',tag:'Nutrition',desc:'Votre carrière vient de gagner une banane.',effect:p=>{p.energy=clamp(p.energy+5,0,100);log(p,'Une banane vous a été offerte en tribune.');}},
-    {label:'Refuser poliment',tag:'Élégance',desc:'Vous gardez votre routine.',effect:p=>{p.mental+=1;log(p,'Vous avez décliné une banane très sérieusement.');}}
+    {label:'Refuser poliment',tag:'Élégance',desc:'Vous gardez votre routine.',effect:p=>{p.stats.mental+=1;log(p,'Vous avez décliné une banane très sérieusement.');}}
   ]},
   {id:'funny_towel',min:16,max:28,title:'La serviette porte-bonheur',text:'Vous perdez votre serviette. Elle est retrouvée dans le sac d’un joueur que vous ne connaissez pas.',choices:[
     {label:'La récupérer',tag:'Mystère',desc:'Personne ne comprend comment.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Votre serviette a voyagé plus que vous.');}},
@@ -392,7 +372,7 @@ const FUNNY_EVENTS = [
   ]},
   {id:'funny_celebrity',min:18,max:30,title:'Une célébrité vous confond',text:'Une célébrité vous demande un autographe. Elle pense que vous êtes déjà une star.',choices:[
     {label:'Signer',tag:'Confiance',desc:'Vous signez sans corriger l’erreur.',effect:p=>{p.morale=clamp(p.morale+8,0,100);log(p,'Vous avez signé un autographe par erreur.');}},
-    {label:'Expliquer',tag:'Humilité',desc:'Vous expliquez que vous êtes encore classé loin.',effect:p=>{p.mental+=1;log(p,'Une célébrité vous a pris pour une star.');}}
+    {label:'Expliquer',tag:'Humilité',desc:'Vous expliquez que vous êtes encore classé loin.',effect:p=>{p.stats.mental+=1;log(p,'Une célébrité vous a pris pour une star.');}}
   ]},
   {id:'funny_ball',min:16,max:27,title:'La balle disparaît',text:'Une balle frappe une bâche et disparaît pendant cinq minutes.',choices:[
     {label:'La chercher',tag:'Patience',desc:'Vous la retrouvez derrière une glacière.',effect:p=>{p.stats.mental+=1;log(p,'Une balle a disparu pendant l’entraînement.');}},
@@ -408,7 +388,7 @@ const FUNNY_EVENTS = [
   ]},
   {id:'funny_music',min:16,max:28,title:'La mauvaise musique',text:'La musique du court lance une chanson beaucoup trop entraînante juste avant votre séance.',choices:[
     {label:'Danser 10 secondes',tag:'Énergie',desc:'Le coach fait semblant de ne rien voir.',effect:p=>{p.energy=clamp(p.energy+4,0,100);p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez dansé avant l’entraînement.');}},
-    {label:'Rester sérieux',tag:'Discipline',desc:'Vous ne bougez pas d’un centimètre.',effect:p=>{p.mental+=2;log(p,'Vous avez résisté à la musique.');}}
+    {label:'Rester sérieux',tag:'Discipline',desc:'Vous ne bougez pas d’un centimètre.',effect:p=>{p.stats.mental+=2;log(p,'Vous avez résisté à la musique.');}}
   ]},
   {id:'funny_icecream',min:16,max:27,title:'La glace du tournoi',text:'Le vendeur vous offre une glace parce qu’il pense que vous avez gagné le tournoi.',choices:[
     {label:'Accepter',tag:'Récompense',desc:'Vous n’avez même pas joué la finale.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Une glace vous a été offerte par erreur.');}},
@@ -419,11 +399,10 @@ const FUNNY_EVENTS = [
     {label:'Viser au hasard',tag:'Improvisation',desc:'Étonnamment, vous gagnez un point.',effect:p=>{p.stats.technique+=1;log(p,'Vous avez joué un point sans voir la ligne.');}}
   ]},
   {id:'funny_raincoat',min:16,max:28,title:'Le k-way porte-malheur',text:'Votre coach vous interdit un k-way précis. Vous ne savez pas pourquoi.',choices:[
-    {label:'L’écouter',tag:'Coach',desc:'Vous jouez avec votre équipement habituel.',effect:p=>{p.mental+=1;log(p,'Le coach a déclaré un k-way maudit.');}},
+    {label:'L’écouter',tag:'Coach',desc:'Vous jouez avec votre équipement habituel.',effect:p=>{p.stats.mental+=1;log(p,'Le coach a déclaré un k-way maudit.');}},
     {label:'Le porter quand même',tag:'Provocation',desc:'Il ne se passe absolument rien.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez défié la légende du k-way maudit.');}}
   ]}
 ];
-
 
 const FUNNY_VARIANTS = [
 {id:'fv_courtkey',min:16,max:30,title:'La clé du court',text:'Tu fermes le court et réalises que la clé est restée de l’autre côté du grillage.',choices:[
@@ -434,18 +413,18 @@ const FUNNY_VARIANTS = [
 {label:'Les tester',tag:'Curiosité',desc:'Elles rebondissent bizarrement.',effect:p=>{p.stats.technique+=1;log(p,'Tu as testé trois balles inconnues.');}}]},
 {id:'fv_scoreboard',min:16,max:30,title:'Le tableau délire',text:'Le tableau affiche 99–0 en ta faveur avant même le début du match.',choices:[
 {label:'Prendre une photo',tag:'Souvenir',desc:'Tu gardes la meilleure victoire imaginaire de ta carrière.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Le tableau a annoncé une victoire avant le match.');}},
-{label:'Le signaler',tag:'Sérieux',desc:'Le score revient à zéro.',effect:p=>{p.mental+=1;log(p,'Le tableau a été réinitialisé.');}}]},
+{label:'Le signaler',tag:'Sérieux',desc:'Le score revient à zéro.',effect:p=>{p.stats.mental+=1;log(p,'Le tableau a été réinitialisé.');}}]},
 {id:'fv_shoelace',min:16,max:30,title:'Le lacet rebelle',text:'Ton lacet se défait exactement au moment où tu fais ton meilleur déplacement.',choices:[
 {label:'Faire une pause',tag:'Sécurité',desc:'Tu refais le nœud et repars.',effect:p=>{p.energy=clamp(p.energy+2,0,100);log(p,'Un lacet a interrompu un déplacement parfait.');}},
-{label:'Continuer',tag:'Panache',desc:'Tu ne le referas plus jamais.',effect:p=>{p.mental+=1;log(p,'Tu as joué avec un lacet défait.');}}]},
+{label:'Continuer',tag:'Panache',desc:'Tu ne le referas plus jamais.',effect:p=>{p.stats.mental+=1;log(p,'Tu as joué avec un lacet défait.');}}]},
 {id:'fv_ballmachine',min:17,max:30,title:'La machine s’emballe',text:'La machine à balles se met à envoyer deux balles à la fois.',choices:[
 {label:'Esquiver',tag:'Réflexes',desc:'Tu transformes ça en exercice.',effect:p=>{p.stats.physique+=2;log(p,'La machine à balles a doublé la cadence.');}},
-{label:'L’arrêter',tag:'Calme',desc:'Tu appuies sur le bouton rouge.',effect:p=>{p.mental+=1;log(p,'Tu as vaincu une machine à balles.');}}]},
+{label:'L’arrêter',tag:'Calme',desc:'Tu appuies sur le bouton rouge.',effect:p=>{p.stats.mental+=1;log(p,'Tu as vaincu une machine à balles.');}}]},
 {id:'fv_wrongshirt',min:16,max:29,title:'Le mauvais maillot',text:'Tu arrives avec le maillot d’un ancien tournoi. Personne ne remarque la différence.',choices:[
 {label:'Assumer',tag:'Style',desc:'Ton équipement devient une tendance locale.',effect:p=>{p.rep=clamp(p.rep+3,0,100);log(p,'Ancien maillot, nouveau style.');}},
 {label:'Changer',tag:'Pro',desc:'Tu repars avec la tenue officielle.',effect:p=>{p.morale=clamp(p.morale+2,0,100);log(p,'Tu as corrigé une petite erreur de tenue.');}}]},
 {id:'fv_clock',min:16,max:30,title:'L’horloge avance à l’envers',text:'L’horloge du club indique 08:12 alors qu’il est clairement 16:12.',choices:[
-{label:'La croire',tag:'Confiance',desc:'Tu arrives huit heures trop tôt demain.',effect:p=>{p.mental+=1;log(p,'L’horloge du club a menti.');}},
+{label:'La croire',tag:'Confiance',desc:'Tu arrives huit heures trop tôt demain.',effect:p=>{p.stats.mental+=1;log(p,'L’horloge du club a menti.');}},
 {label:'Vérifier',tag:'Précision',desc:'Tu évites une très longue matinée.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Tu as découvert une horloge cassée.');}}]},
 {id:'fv_autograph',min:18,max:30,title:'Autographe sur une balle',text:'Un enfant te demande de signer une balle. Tu signes tellement gros qu’il ne peut plus jouer avec.',choices:[
 {label:'Signer plus petit',tag:'Gentillesse',desc:'La balle est sauvée.',effect:p=>{p.rep=clamp(p.rep+5,0,100);log(p,'Tu as signé une balle deux fois.');}},
@@ -455,21 +434,21 @@ const FUNNY_VARIANTS = [
 {label:'Demander',tag:'Précision',desc:'Tu apprends qu’un sponsor a payé le changement.',effect:p=>{p.rep=clamp(p.rep+2,0,100);log(p,'Un sponsor a rebaptisé le court.');}}]},
 {id:'fv_loudspeaker',min:16,max:30,title:'Le haut-parleur te félicite',text:'Le speaker annonce ton nom alors que tu n’as encore rien gagné.',choices:[
 {label:'Saluer',tag:'Confiance',desc:'Tu salues quand même.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Le speaker t’a félicité trop tôt.');}},
-{label:'Rester discret',tag:'Humilité',desc:'Tu retournes t’entraîner.',effect:p=>{p.mental+=1;log(p,'Tu as ignoré une fausse célébration.');}}]},
+{label:'Rester discret',tag:'Humilité',desc:'Tu retournes t’entraîner.',effect:p=>{p.stats.mental+=1;log(p,'Tu as ignoré une fausse célébration.');}}]},
 {id:'fv_racketcover',min:16,max:30,title:'La housse introuvable',text:'Tu retrouves ta housse dans le coffre d’un joueur qui porte exactement le même prénom.',choices:[
 {label:'Vérifier',tag:'Calme',desc:'Mystère résolu.',effect:p=>{p.morale=clamp(p.morale+3,0,100);log(p,'Ta housse a voyagé dans le mauvais coffre.');}},
-{label:'Récupérer',tag:'Instinct',desc:'Tu prends la bonne après comparaison.',effect:p=>{p.mental+=1;log(p,'Deux housses presque identiques ont créé un quiproquo.');}}]},
+{label:'Récupérer',tag:'Instinct',desc:'Tu prends la bonne après comparaison.',effect:p=>{p.stats.mental+=1;log(p,'Deux housses presque identiques ont créé un quiproquo.');}}]},
 {id:'fv_tennisjudge',min:17,max:30,title:'L’arbitre connaît ton voisin',text:'L’arbitre te demande si tu vas bien parce qu’il connaît ton voisin de palier.',choices:[
 {label:'Discuter',tag:'Social',desc:'Vous parlez trente secondes avant le match.',effect:p=>{p.rep=clamp(p.rep+2,0,100);log(p,'L’arbitre connaissait ton voisin.');}},
-{label:'Se concentrer',tag:'Focus',desc:'Tu retournes à ton échauffement.',effect:p=>{p.mental+=1;log(p,'Tu es resté concentré malgré une drôle de coïncidence.');}}]},
+{label:'Se concentrer',tag:'Focus',desc:'Tu retournes à ton échauffement.',effect:p=>{p.stats.mental+=1;log(p,'Tu es resté concentré malgré une drôle de coïncidence.');}}]},
 {id:'fv_wrongwater',min:16,max:30,title:'La bouteille surprise',text:'Tu prends ta bouteille et découvres qu’elle contient de l’eau pétillante.',choices:[
 {label:'Boire quand même',tag:'Impro',desc:'Tu prends une gorgée et regrettes immédiatement.',effect:p=>{p.morale=clamp(p.morale+3,0,100);log(p,'Tu as découvert une bouteille gazeuse au mauvais moment.');}},
 {label:'Changer',tag:'Routine',desc:'Tu récupères ta bouteille habituelle.',effect:p=>{p.energy=clamp(p.energy+2,0,100);log(p,'Ta routine hydratation a survécu.');}}]},
 {id:'fv_tiebreak',min:18,max:32,title:'Le tie-break imaginaire',text:'À l’entraînement, ton coach annonce « balle de match » alors que le score est 2–2.',choices:[
-{label:'Jouer à fond',tag:'Compétition',desc:'Tout le monde se prend au jeu.',effect:p=>{p.mental+=2;p.morale=clamp(p.morale+3,0,100);log(p,'Un tie-break imaginaire a réveillé tout le groupe.');}},
-{label:'Rappeler le score',tag:'Lucidité',desc:'Ton coach répond : « Justement. »',effect:p=>{p.mental+=1;log(p,'Le coach a inventé une balle de match.');}}]},
+{label:'Jouer à fond',tag:'Compétition',desc:'Tout le monde se prend au jeu.',effect:p=>{p.stats.mental+=2;p.morale=clamp(p.morale+3,0,100);log(p,'Un tie-break imaginaire a réveillé tout le groupe.');}},
+{label:'Rappeler le score',tag:'Lucidité',desc:'Ton coach répond : « Justement. »',effect:p=>{p.stats.mental+=1;log(p,'Le coach a inventé une balle de match.');}}]},
 {id:'fv_rainroof',min:16,max:30,title:'Le toit fait un bruit énorme',text:'Une goutte tombe sur le toit du court couvert. Tout le monde croit que c’est la pluie.',choices:[
-{label:'Continuer',tag:'Concentration',desc:'Le silence revient.',effect:p=>{p.mental+=2;log(p,'Une seule goutte a créé une fausse alerte météo.');}},
+{label:'Continuer',tag:'Concentration',desc:'Le silence revient.',effect:p=>{p.stats.mental+=2;log(p,'Une seule goutte a créé une fausse alerte météo.');}},
 {label:'Regarder dehors',tag:'Curiosité',desc:'Il fait grand soleil.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Fausse alerte météo au club.');}}]}
 ];
 
@@ -602,15 +581,14 @@ function newPlayer(){
 }
 
 /* ============ SIMULATION ============ */
-function planSeason(rank, intensityId){
+/* BUG CORRIGÉ : la fonction utilisait une variable globale "p" qui
+   n'existait jamais, ce qui faisait planter le calcul du calendrier
+   dès la fin de la création du joueur. On passe maintenant l'âge en
+   paramètre explicite. */
+function planSeason(rank, intensityId, age){
   const mult = intensityId==='leger' ? 0.55 : intensityId==='intensif' ? 1.6 : 1;
   const fill = (tier,n) => Array(Math.max(0, Math.round(n*mult))).fill(tier);
   let plan = [];
-  // Progression souple : on débloque les catégories avant d'être déjà
-  // tout en haut du classement. Le joueur ne reste pas coincé en Challenger.
-  // Progression généreuse : à 22 ans, un joueur bien développé
-  // doit avoir au moins une occasion de disputer un Grand Chelem.
-  const age=p.age||16;
   if(age>=21){
     if(rank>800) plan=[...fill('challenger',2),...fill('atp250',3),...fill('slam',1)];
     else if(rank>500) plan=[...fill('challenger',1),...fill('atp250',3),...fill('atp500',2),...fill('slam',1)];
@@ -643,7 +621,12 @@ function simulateTournament(p, tierId){
   for(let r=0; r<tier.points.length-1; r++){
     const oppSkill = tier.baseOpp + r*tier.oppInc + rand(-6,6);
     const eff = baseSkill + rand(-5,5) + 12;
-    let winProb = clamp(eff/(eff+oppSkill), 0,25, 0.98);
+    /* BUG CORRIGÉ : clamp() ne prend que (valeur, min, max). L'appel
+       original passait 4 arguments (0, 25, 0.98) ; le "25" était
+       silencieusement ignoré et le plafond réel de la probabilité
+       de victoire n'était jamais appliqué. On repasse à 3 arguments
+       avec des bornes cohérentes pour une probabilité (0.02 à 0.98). */
+    let winProb = clamp(eff/(eff+oppSkill), 0.02, 0.98);
     if(Math.random() < winProb){ roundsWon++; } else { break; }
   }
   const points = tier.points[roundsWon];
@@ -676,7 +659,7 @@ function ageAdjust(p){
 }
 function runSeason(p, intensityId){
   ageAdjust(p);
-  const plan = planSeason(p.rank, intensityId);
+  const plan = planSeason(p.rank, intensityId, p.age);
   const results = [];
   let seasonPoints = 0, seasonPrize = 0, titlesThisSeason = [];
   let stopped = false;
@@ -881,13 +864,11 @@ function pickEvent(p){
   let funny = eligibleFunny.filter(e => !usedFunnyEvents.includes(e.id));
   let serious = eligibleSerious.filter(e => !usedSeriousEvents.includes(e.id));
 
-  // 68% d'improbable, mais uniquement parmi les événements encore inédits.
   let pool, isFunny;
   if(Math.random() < 0.68 && funny.length){ pool = funny; isFunny = true; }
   else if(serious.length){ pool = serious; isFunny = false; }
   else if(funny.length){ pool = funny; isFunny = true; }
   else {
-    // On ne recommence une catégorie que lorsqu'elle a réellement été épuisée.
     if(eligibleFunny.length){ usedFunnyEvents = []; funny = eligibleFunny; }
     if(eligibleSerious.length){ usedSeriousEvents = []; serious = eligibleSerious; }
     if(Math.random() < 0.68 && funny.length){ pool = funny; isFunny = true; }
@@ -1035,8 +1016,6 @@ function renderStage(){
     `;
     document.getElementById('nextSeasonBtn').onclick = ()=>{
       p.season++; p.age++;
-      // Une carrière doit pouvoir aller au bout : aucune blessure ni baisse de physique
-      // ne force la retraite. À 40 ans, le jeu propose la retraite mais laisse continuer.
       if(p.age>=45){ p.phase = 'event'; p.forcedRetire = false; }
       else { p.phase = 'event'; }
       render();
