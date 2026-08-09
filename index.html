@@ -324,31 +324,40 @@ const COURT_ILLUSTRATION = (w=520,h=280) => `<svg width="${w}" height="${h}" vie
 </svg>`;
 
 /* Grand court en perspective, utilisé comme fond persistant en filigrane derrière tout le jeu */
-const COURT_BACKDROP = () => `<svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg">
+/* 5 palettes de couleurs différentes pour le fond de court (terre battue, gazon, dur, nocturne, coucher de soleil) */
+const COURT_PALETTES = [
+  { name:'terre', sky1:'#8A3E1F', sky2:'#B4552A', court:'#B4552A', crowd:'#3B2415', lines:'#FBEEE3', dash:'#3B2415', ball:'#CFEA3E' },
+  { name:'gazon', sky1:'#0F3B22', sky2:'#1B5E3A', court:'#1B5E3A', crowd:'#0A2416', lines:'#E7F3EB', dash:'#0A2416', ball:'#F2E24A' },
+  { name:'dur', sky1:'#12335C', sky2:'#1B4B8C', court:'#1B4B8C', crowd:'#0B1F3B', lines:'#EAF2FB', dash:'#0B1F3B', ball:'#CFEA3E' },
+  { name:'nocturne', sky1:'#1D1533', sky2:'#3B2A5C', court:'#2E2350', lines:'#E9E1F7', dash:'#150F26', ball:'#F2E24A', crowd:'#150F26' },
+  { name:'coucher', sky1:'#5B1E3D', sky2:'#8C3E63', court:'#8C3E63', crowd:'#3B1226', lines:'#FBEAF1', dash:'#3B1226', ball:'#F2C24A' },
+];
+const COURT_BACKDROP = (pal) => `<svg viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <linearGradient id="bgSky" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#8A3E1F"/>
-    <stop offset="100%" stop-color="#B4552A"/>
+    <stop offset="0%" stop-color="${pal.sky1}"/>
+    <stop offset="100%" stop-color="${pal.sky2}"/>
   </linearGradient>
 </defs>
 <rect x="0" y="0" width="900" height="180" fill="url(#bgSky)"/>
 <g opacity=".5">
-  <circle cx="120" cy="60" r="16" fill="#3B2415"/><circle cx="170" cy="70" r="14" fill="#3B2415"/>
-  <circle cx="220" cy="55" r="17" fill="#3B2415"/><circle cx="270" cy="68" r="13" fill="#3B2415"/>
-  <circle cx="630" cy="58" r="15" fill="#3B2415"/><circle cx="680" cy="66" r="17" fill="#3B2415"/>
-  <circle cx="730" cy="54" r="14" fill="#3B2415"/><circle cx="780" cy="70" r="16" fill="#3B2415"/>
+  <circle cx="120" cy="60" r="16" fill="${pal.crowd}"/><circle cx="170" cy="70" r="14" fill="${pal.crowd}"/>
+  <circle cx="220" cy="55" r="17" fill="${pal.crowd}"/><circle cx="270" cy="68" r="13" fill="${pal.crowd}"/>
+  <circle cx="630" cy="58" r="15" fill="${pal.crowd}"/><circle cx="680" cy="66" r="17" fill="${pal.crowd}"/>
+  <circle cx="730" cy="54" r="14" fill="${pal.crowd}"/><circle cx="780" cy="70" r="16" fill="${pal.crowd}"/>
 </g>
-<polygon points="180,180 720,180 860,700 40,700" fill="#B4552A"/>
-<polygon points="230,200 670,200 800,660 100,660" fill="none" stroke="#FBEEE3" stroke-width="5"/>
-<line x1="90" y1="430" x2="810" y2="430" stroke="#FBEEE3" stroke-width="5"/>
-<line x1="330" y1="200" x2="255" y2="660" stroke="#FBEEE3" stroke-width="3"/>
-<line x1="570" y1="200" x2="645" y2="660" stroke="#FBEEE3" stroke-width="3"/>
-<line x1="330" y1="290" x2="570" y2="290" stroke="#FBEEE3" stroke-width="3"/>
-<line x1="255" y1="580" x2="645" y2="580" stroke="#FBEEE3" stroke-width="3"/>
-<line x1="450" y1="290" x2="450" y2="580" stroke="#FBEEE3" stroke-width="3"/>
-<line x1="450" y1="180" x2="450" y2="700" stroke="#3B2415" stroke-width="6" stroke-dasharray="3 10"/>
-<circle cx="450" cy="430" r="18" fill="#CFEA3E" stroke="#3B2415" stroke-width="2"/>
+<polygon points="180,180 720,180 860,700 40,700" fill="${pal.court}"/>
+<polygon points="230,200 670,200 800,660 100,660" fill="none" stroke="${pal.lines}" stroke-width="5"/>
+<line x1="90" y1="430" x2="810" y2="430" stroke="${pal.lines}" stroke-width="5"/>
+<line x1="330" y1="200" x2="255" y2="660" stroke="${pal.lines}" stroke-width="3"/>
+<line x1="570" y1="200" x2="645" y2="660" stroke="${pal.lines}" stroke-width="3"/>
+<line x1="330" y1="290" x2="570" y2="290" stroke="${pal.lines}" stroke-width="3"/>
+<line x1="255" y1="580" x2="645" y2="580" stroke="${pal.lines}" stroke-width="3"/>
+<line x1="450" y1="290" x2="450" y2="580" stroke="${pal.lines}" stroke-width="3"/>
+<line x1="450" y1="180" x2="450" y2="700" stroke="${pal.dash}" stroke-width="6" stroke-dasharray="3 10"/>
+<circle cx="450" cy="430" r="18" fill="${pal.ball}" stroke="${pal.dash}" stroke-width="2"/>
 </svg>`;
+
 
 
 const RACKET_ICON = (size=26, color='#8A3E1F') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -1521,6 +1530,10 @@ function computeBadges(p){
 
 /* ============ RENDU ============ */
 const app = document.getElementById('app');
+function refreshCourtBackground(){
+  const el = document.getElementById('bg-court');
+  if(el) el.innerHTML = COURT_BACKDROP(choose(COURT_PALETTES));
+}
 function render(){
   if(!player){ renderIntro(); return; }
   if(player.retired || player.forcedRetire){ renderEnd(); return; }
@@ -1667,7 +1680,7 @@ function creationNext(){
   renderCreation();
 }
 
-function startCareer(){ player = newPlayer(); usedEvents = []; usedFunnyEvents = []; usedSeriousEvents = []; render(); }
+function startCareer(){ player = newPlayer(); usedEvents = []; usedFunnyEvents = []; usedSeriousEvents = []; refreshCourtBackground(); render(); }
 function pickEvent(p){
   const ALL_FUNNY_EVENTS = FUNNY_EVENTS.concat(FUNNY_VARIANTS);
   const eligibleFunny = ALL_FUNNY_EVENTS.filter(e => p.age>=e.min && p.age<=e.max);
@@ -1974,6 +1987,7 @@ function renderStage(){
     `;
     document.getElementById('nextSeasonBtn').onclick = ()=>{
       p.season++; p.age++;
+      refreshCourtBackground();
       if(p.pendingSlamQualified){ p.pendingSlamQualified = false; p.phase = 'slam_qualified'; }
       else { p.phase = 'event'; }
       render();
@@ -2184,7 +2198,7 @@ function renderEnd(){
   `;
 }
 
-document.getElementById('bg-court').innerHTML = COURT_BACKDROP();
+document.getElementById('bg-court').innerHTML = COURT_BACKDROP(choose(COURT_PALETTES));
 render();
 
 </script>
