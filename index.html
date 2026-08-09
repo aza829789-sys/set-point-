@@ -243,6 +243,11 @@ img,svg,canvas{max-width:100%}
 .opt.locked{opacity:.55; cursor:not-allowed; background:#F2F4EF;}
 .opt.locked .h{color:var(--muted);}
 
+.mod-banner{display:flex; align-items:center; gap:12px; background:#F9FBF7; border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin:2px 0 14px;}
+.mod-icon{flex-shrink:0;}
+.mod-label{font-weight:700; font-size:13.5px;}
+.mod-desc{font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4;}
+
 .qualif-banner{
   text-align:center; padding:30px 16px; border-radius:16px;
   background:linear-gradient(180deg, #FBF4E4, var(--surface));
@@ -300,6 +305,57 @@ const COURT_ILLUSTRATION = (w=520,h=280) => `<svg width="${w}" height="${h}" vie
 <line x1="260" y1="70" x2="260" y2="210" stroke="#F3F8F0" stroke-width="2"/>
 <line x1="260" y1="20" x2="260" y2="260" stroke="#153452" stroke-width="4" stroke-dasharray="2 6"/>
 <circle cx="260" cy="140" r="11" fill="#CFEA3E" stroke="#132A1D" stroke-width="1.5"/>
+</svg>`;
+
+/* ============ PETITES ILLUSTRATIONS TENNIS SUPPLÉMENTAIRES ============ */
+const RACKET_ICON = (size=26, color='#153452') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<ellipse cx="16" cy="14" rx="11" ry="13" fill="none" stroke="${color}" stroke-width="2.5"/>
+<line x1="7" y1="6" x2="25" y2="22" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="9" y1="4" x2="23" y2="24" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="11" y1="2" x2="21" y2="26" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="6" y1="10" x2="26" y2="18" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="6" y1="14" x2="26" y2="14" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="6" y1="18" x2="26" y2="10" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="16" y1="27" x2="12" y2="38" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+</svg>`;
+const MEDAL_ICON = (size=26, color='#D9A441') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 2 L18 15 L9 15 Z" fill="${color}" opacity=".7"/>
+<path d="M28 2 L22 15 L31 15 Z" fill="${color}" opacity=".7"/>
+<circle cx="20" cy="24" r="12" fill="${color}" stroke="#132A1D" stroke-width="1.5"/>
+<circle cx="20" cy="24" r="6.5" fill="none" stroke="#132A1D" stroke-width="1.2"/>
+</svg>`;
+const SHOE_ICON = (size=24, color='#132A1D') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<path d="M4 26c0-6 4-9 9-11l6-3c2-1 4-1 5 1l3 5c3 1 9 2 9 7 0 2-2 3-4 3H7c-2 0-3-1-3-2z" fill="${color}" opacity=".85"/>
+<line x1="10" y1="21" x2="14" y2="27" stroke="#F3F8F0" stroke-width="1.2"/>
+<line x1="15" y1="19" x2="19" y2="27" stroke="#F3F8F0" stroke-width="1.2"/>
+<line x1="20" y1="18" x2="24" y2="27" stroke="#F3F8F0" stroke-width="1.2"/>
+</svg>`;
+const SPARK_ICON = (size=22, color='#4E8C3F') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<path d="M20 2 L24 16 L38 20 L24 24 L20 38 L16 24 L2 20 L16 16 Z" fill="${color}"/>
+</svg>`;
+const CLOUD_ICON = (size=24, color='#8A94A0') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<path d="M10 26a7 7 0 0 1-1-13.9A9 9 0 0 1 26 10a7.5 7.5 0 0 1 3 14.4" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round"/>
+<path d="M9 26h20a5 5 0 0 0 0-10" fill="${color}" opacity=".18"/>
+</svg>`;
+const CALENDAR_ICON = (size=24, color='#153452') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<rect x="5" y="8" width="30" height="27" rx="3" fill="none" stroke="${color}" stroke-width="2.2"/>
+<line x1="5" y1="16" x2="35" y2="16" stroke="${color}" stroke-width="2.2"/>
+<line x1="12" y1="4" x2="12" y2="12" stroke="${color}" stroke-width="2.2" stroke-linecap="round"/>
+<line x1="28" y1="4" x2="28" y2="12" stroke="${color}" stroke-width="2.2" stroke-linecap="round"/>
+<circle cx="13" cy="23" r="2.2" fill="${color}"/>
+<circle cx="20" cy="23" r="2.2" fill="${color}"/>
+<circle cx="27" cy="23" r="2.2" fill="${color}"/>
+<circle cx="13" cy="29" r="2.2" fill="${color}"/>
+<circle cx="20" cy="29" r="2.2" fill="${color}"/>
+</svg>`;
+const NET_ICON = (size=26, color='#647B6C') => `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+<line x1="4" y1="8" x2="4" y2="32" stroke="${color}" stroke-width="2.5"/>
+<line x1="36" y1="8" x2="36" y2="32" stroke="${color}" stroke-width="2.5"/>
+<line x1="4" y1="10" x2="36" y2="10" stroke="${color}" stroke-width="2"/>
+<line x1="4" y1="10" x2="36" y2="30" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="4" y1="30" x2="36" y2="10" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="4" y1="20" x2="36" y2="10" stroke="${color}" stroke-width="1" opacity=".5"/>
+<line x1="4" y1="10" x2="36" y2="20" stroke="${color}" stroke-width="1" opacity=".5"/>
 </svg>`;
 
 const SLAM_ELIGIBLE_RANK = 200;
@@ -842,6 +898,40 @@ function seasonBuildIntro(p){
   return SEASON_BUILD_SCRIPTS[idx](p);
 }
 
+/* ============ MODIFICATEURS DE SAISON — pour que chaque calendrier soit vraiment différent ============ */
+/* Un modificateur tiré (sans répétition avant d'avoir épuisé le sac) change concrètement la saison :
+   bonus/malus de jeu, argent, énergie, options de calendrier modifiées. Change à chaque saison, pas seulement le texte. */
+const SEASON_MODIFIERS = [
+  { id:'lancee', label:'Sur une lancée', icon:SPARK_ICON, tone:'good', desc:'Les sensations sont excellentes à l\'entraînement. +0.03 de réussite ce trimestre.', bonus:0.03,
+    apply:p=>{ p.morale = clamp(p.morale+4,0,100); } },
+  { id:'fatigue_accumulee', label:'Fatigue accumulée', icon:CLOUD_ICON, tone:'bad', desc:'Le corps traîne encore les efforts de la saison passée. -0.03 de réussite, énergie réduite.', bonus:-0.03,
+    apply:p=>{ p.energy = clamp(p.energy-8,0,100); } },
+  { id:'nouveau_coach', label:'Nouveau coach', icon:RACKET_ICON, tone:'good', desc:'Un changement dans le staff technique relance la dynamique. +0.02 de réussite.', bonus:0.02,
+    apply:p=>{ p.stats.mental = clamp(p.stats.mental+2,5,99); } },
+  { id:'saison_sponsors', label:'Grosse saison sponsors', icon:MEDAL_ICON, tone:'neutral', desc:'Les partenaires investissent massivement dans votre image.', bonus:0,
+    apply:p=>{ p.money += 8000; p.rep = clamp(p.rep+4,0,100); } },
+  { id:'nouvelles_chaussures', label:'Nouvel équipement', icon:SHOE_ICON, tone:'good', desc:'Un équipement flambant neuf, parfaitement ajusté. +0.02 de réussite.', bonus:0.02,
+    apply:p=>{} },
+  { id:'calendrier_serre', label:'Calendrier international serré', icon:CALENDAR_ICON, tone:'bad', desc:'Le circuit est particulièrement encombré cette année : la concurrence sera rude. -0.02 de réussite.', bonus:-0.02,
+    apply:p=>{} },
+  { id:'confiance_filet', label:'Confiance retrouvée au filet', icon:NET_ICON, tone:'good', desc:'Les derniers entraînements au filet inspirent confiance. +0.02 de réussite.', bonus:0.02,
+    apply:p=>{ p.morale = clamp(p.morale+2,0,100); } },
+  { id:'doute_public', label:'Doutes de la presse', icon:CLOUD_ICON, tone:'bad', desc:'Les médias doutent ouvertement de votre saison à venir. -0.015 de réussite, mais de quoi se motiver.', bonus:-0.015,
+    apply:p=>{ p.morale = clamp(p.morale-2,0,100); } },
+  { id:'reprise_ideale', label:'Reprise idéale', icon:SPARK_ICON, tone:'good', desc:'La préparation hivernale s\'est déroulée sans le moindre accroc. +0.025 de réussite, forme au sommet.', bonus:0.025,
+    apply:p=>{ p.energy = clamp(p.energy+6,0,100); } },
+  { id:'blessure_legere', label:'Petite gêne physique', icon:CLOUD_ICON, tone:'bad', desc:'Une gêne minime, sans gravité, mais qui pèse un peu sur le début de saison. -0.025 de réussite.', bonus:-0.025,
+    apply:p=>{ p.energy = clamp(p.energy-5,0,100); } },
+];
+function pickSeasonModifier(p){
+  if(!p.usedModifiers) p.usedModifiers = [];
+  let pool = SEASON_MODIFIERS.filter((_,i)=>!p.usedModifiers.includes(i));
+  if(!pool.length){ p.usedModifiers = []; pool = SEASON_MODIFIERS; }
+  const chosen = choose(pool);
+  p.usedModifiers.push(SEASON_MODIFIERS.indexOf(chosen));
+  return chosen;
+}
+
 /* ============ ÉTAT ============ */
 let player = null;
 let usedEvents = [];
@@ -939,6 +1029,7 @@ function ageAdjust(p){
 /* ============ MOTEUR DE SAISON, PAS À PAS ============ */
 function startSeason(p, choice){
   ageAdjust(p);
+  const modBonus = choice.modifier ? choice.modifier.bonus : 0;
   if(p.skipSeason){
     p.skipSeason = false;
     p.lastRecap = { intensity:'Saison blanche', played:0, stopped:true, results:[], titlesThisSeason:[], seasonPoints:0, seasonPrize:0, rankBefore:p.rank, rankAfter:p.rank };
@@ -955,7 +1046,7 @@ function startSeason(p, choice){
   for(let i=0;i<choice.masters;i++){ queue.push({tier:'masters', slamId:null}); }
   p.seasonRun = {
     queue, idx:0, results:[], seasonPoints:0, seasonPrize:0, titlesThisSeason:[], stopped:false,
-    current:null, intensityLabel: CALENDAR_OPTIONS.find(c=>c.id===choice.intensity).label,
+    current:null, intensityLabel: CALENDAR_OPTIONS.find(c=>c.id===choice.intensity).label, modBonus,
   };
   advanceSeason(p);
 }
@@ -979,7 +1070,7 @@ function playRound(p, cur, tacticMod){
   const eff = baseSkill + rand(-5,5) + 12;
   const surface = matchSurface(cur);
   const surfaceMod = styleSurfaceMod(p, surface) + nationSurfaceMod(p, surface);
-  const contextMod = surfaceMod + homeCrowdMod(p, cur) + seedingMod(p, cur);
+  const contextMod = surfaceMod + homeCrowdMod(p, cur) + seedingMod(p, cur) + (p.seasonRun ? p.seasonRun.modBonus||0 : 0);
   const winProb = clamp(eff/(eff+oppSkill) + tacticMod + contextMod, 0.02, 0.98);
   const won = Math.random() < winProb;
   const roundCost = 2 + Math.floor(tier.energyCost / cur.totalRounds);
@@ -1335,7 +1426,7 @@ function renderGame(){
     <div class="grid">
       <div>
         <div class="card">
-          <div class="player-name">${p.name}</div>
+          <div class="player-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(20)}${p.name}</div>
           <div class="player-sub">${NATIONS.find(n=>n.id===p.nation.id).label} · ${p.style.label}</div>
 
           <div class="stat"><div class="stat-top"><span>Technique</span><b>${Math.round(p.stats.technique)}</b></div><div class="stat-bar"><span style="width:${p.stats.technique}%"></span></div></div>
@@ -1350,7 +1441,7 @@ function renderGame(){
           <div class="money-line"><span>Meilleur classement</span><span class="v">#${p.bestRank}</span></div>
 
           <div class="badge-row">
-            <span class="${p.titles.slam?'has':''}">Slam ×${p.titles.slam}</span>
+            <span class="${p.titles.slam?'has':''}">🏆 Slam ×${p.titles.slam}</span>
             <span class="${p.titles.masters?'has':''}">M1000 ×${p.titles.masters}</span>
             <span class="${p.titles.atp500?'has':''}">ATP500 ×${p.titles.atp500}</span>
             <span class="${p.titles.atp250?'has':''}">ATP250 ×${p.titles.atp250}</span>
@@ -1359,7 +1450,7 @@ function renderGame(){
         </div>
 
         <div class="card">
-          <div class="eyebrow">Journal</div>
+          <div class="eyebrow" style="display:flex;align-items:center;gap:6px;">${NET_ICON(16)} Journal</div>
           <div class="journal" id="journal"></div>
         </div>
       </div>
@@ -1445,7 +1536,7 @@ function renderStage(){
     const ev = pendingGameplan;
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
-        <div class="tourn-banner-name">${tournamentLabel(cur.tier, cur.slamId)}</div>
+        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentLabel(cur.tier, cur.slamId)}</div>
         <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId, cur.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">Plan de jeu</div>
@@ -1487,7 +1578,7 @@ function renderStage(){
     if(!cur.tacticOptions) cur.tacticOptions = pickTactics(3);
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
-        <div class="tourn-banner-name">${tournamentLabel(cur.tier, cur.slamId)}</div>
+        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentLabel(cur.tier, cur.slamId)}</div>
         <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId, cur.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">${stageLabel}</div>
@@ -1512,7 +1603,7 @@ function renderStage(){
     const rl = roundLabel(r.roundsWon, r.totalRounds);
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
-        <div class="tourn-banner-name">${tournamentLabel(r.tier, r.slamId)}</div>
+        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentLabel(r.tier, r.slamId)}</div>
         <div class="tourn-banner-sub">${tournamentSurface(r.tier, r.slamId, r.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">Résultat</div>
@@ -1605,9 +1696,19 @@ function renderCalendarPhase(){
   if(!calendarChoice) calendarChoice = { intensity:'standard', slams:{}, masters:0 };
   const stage = document.getElementById('stage');
   if(!calendarChoice.introText) calendarChoice.introText = seasonBuildIntro(p);
+  if(!calendarChoice.modifier){
+    calendarChoice.modifier = pickSeasonModifier(p);
+    calendarChoice.modifier.apply(p);
+  }
+  const mod = calendarChoice.modifier;
+  const modToneColor = mod.tone==='good' ? '#4E8C3F' : mod.tone==='bad' ? '#D14B3E' : 'var(--net)';
   stage.innerHTML = `
     <div class="eyebrow">Saison ${p.season}</div>
-    <div class="stage-h">Composez votre saison</div>
+    <div class="stage-h" style="display:flex;align-items:center;gap:10px;">${RACKET_ICON(24)} Composez votre saison</div>
+    <div class="mod-banner" style="border-left:4px solid ${modToneColor}">
+      <div class="mod-icon">${mod.icon(30)}</div>
+      <div><div class="mod-label" style="color:${modToneColor}">${mod.label}</div><div class="mod-desc">${mod.desc}</div></div>
+    </div>
     <div class="stage-p"><i>${calendarChoice.introText}</i><br>Choisissez le rythme des petits tournois, puis ajoutez les grands rendez-vous que vous voulez disputer — chacun rallonge la saison.
     ${p.slamEligible ? '' : `<br><span style="color:var(--muted);">Le Grand Chelem se débloque sous le rang #${SLAM_ELIGIBLE_RANK}.</span>`}</div>
     <div class="eyebrow" style="margin-top:6px;">Calendrier de base</div>
@@ -1622,7 +1723,7 @@ function renderCalendarPhase(){
   CALENDAR_OPTIONS.forEach(c=>{
     const btn = document.createElement('button');
     btn.className = 'choice' + (calendarChoice.intensity===c.id ? ' sel' : '');
-    btn.innerHTML = `<span class="tag">${c.tag}</span>${c.label}<span class="desc">${c.desc}</span>`;
+    btn.innerHTML = `<span class="tag">${c.tag}</span><span style="display:flex;align-items:center;gap:6px;">${BALL_ICON(14)}${c.label}</span><span class="desc">${c.desc}</span>`;
     btn.onclick = ()=>{ calendarChoice.intensity = c.id; renderCalendarPhase(); };
     calWrap.appendChild(btn);
   });
