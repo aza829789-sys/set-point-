@@ -7,25 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&family=Space+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
-/* --- NOUVEAUX STYLES ET ANIMATIONS --- */
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-12px); }
-}
-.ball-bounce { 
-  animation: bounce 2s infinite ease-in-out; 
-}
-
-.welcome-card {
-  background: linear-gradient(135deg, var(--net) 0%, #1a4a75 100%);
-  color: white;
-  border: 4px solid var(--ball);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  padding: 60px 20px;
-  border-radius: 24px;
-}
-.welcome-card h1 { color: white; font-size: 56px; margin-bottom: 20px; }
-.welcome-card p { color: #E7F0F6; font-size: 18px; max-width: 600px; margin: 0 auto 30px; line-height: 1.6; }
 :root{
   --bg:#F3F8F0;
   --surface:#FFFFFF;
@@ -49,7 +30,6 @@ body{
   background-image:
     radial-gradient(circle at 100% 0%, rgba(207,234,62,0.16), transparent 45%),
     radial-gradient(circle at 0% 100%, rgba(21,52,82,0.05), transparent 40%);
-  transition: background-color 0.4s ease;
 }
 h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .mono{font-family:'Space Mono', monospace;}
@@ -74,7 +54,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
   color:#fff;
   position:relative;
   overflow:hidden;
-  transition: background 0.4s ease;
 }
 .topbar::after{
   content:"";
@@ -100,7 +79,6 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
   border-radius:16px;
   padding:20px;
   box-shadow:0 1px 0 rgba(19,42,29,0.02);
-  transition: background 0.4s ease, border-color 0.4s ease;
 }
 .card + .card{margin-top:16px;}
 
@@ -255,6 +233,7 @@ img,svg,canvas{max-width:100%}
 .gain{padding:5px 8px;border-radius:999px;font-size:11px;font-weight:700}
 .gain.up{background:#e5f4e8;color:#17652b}.gain.down{background:#fae7e7;color:#8d2525}.gain.neutral{background:#edf0ed;color:#536057}
 
+
 .choice.sel{border-color:var(--ball-dark); background:#F4FADF;}
 .tourn-banner{padding:14px 16px;border-radius:12px;color:#fff;}
 .tourn-banner-name{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;}
@@ -312,58 +291,41 @@ const TIERS = {
   slam:{ label:'Grand Chelem', baseOpp:67, oppInc:4, points:[10,45,90,180,360,720,1200], prize:[60000,120000,220000,400000,700000,1300000,2400000], energyCost:13 }
 };
 
-/* Identité et couleurs des 4 levées du Grand Chelem */
+/* Identité et couleurs des 4 levées du Grand Chelem, par surface */
 const SLAMS = [
-  { id:'ao', label:'Open d\'Australie', surface:'Dur', place:'Melbourne', week:4, colors:{ bg:'#EAF2FB', surface:'#FFFFFF', ink:'#0F294A', net:'#1B4B8C', clay:'#1B4B8C', line:'#C6D9EF', ball:'#4F8FDB', ball-dark:'#356EA8' } },
-  { id:'rg', label:'Roland-Garros', surface:'Terre battue', place:'Paris', week:22, colors:{ bg:'#FBEEE3', surface:'#FFFFFF', ink:'#3D1E12', net:'#C1592A', clay:'#C1592A', line:'#EED4C3', ball:'#D4632B', ball-dark:'#A84B1F' } },
-  { id:'wim', label:'Wimbledon', surface:'Gazon', place:'Londres', week:29, colors:{ bg:'#E7F3EB', surface:'#FFFFFF', ink:'#0F3621', net:'#1B5E3A', clay:'#1B5E3A', line:'#C7E5D1', ball:'#2E8B57', ball-dark:'#1F5E3A' } },
-  { id:'uso', label:'US Open', surface:'Dur', place:'New York', week:38, colors:{ bg:'#EAEBFB', surface:'#FFFFFF', ink:'#141B4A', net:'#25348C', clay:'#25348C', line:'#CBCEEF', ball:'#5566C7', ball-dark:'#3E4C9C' } },
+  { id:'ao', label:'Open d\'Australie', surface:'Dur', place:'Melbourne', colors:{ primary:'#1B4B8C', light:'#EAF2FB', accent:'#4F8FDB' } },
+  { id:'rg', label:'Roland-Garros', surface:'Terre battue', place:'Paris', colors:{ primary:'#C1592A', light:'#FBEEE3', accent:'#E0895A' } },
+  { id:'wim', label:'Wimbledon', surface:'Gazon', place:'Londres', colors:{ primary:'#1B5E3A', light:'#E7F3EB', accent:'#4C9268' } },
+  { id:'uso', label:'US Open', surface:'Dur', place:'New York', colors:{ primary:'#25348C', light:'#EAEBFB', accent:'#5566C7' } },
 ];
 
+/* Couleurs par défaut pour les autres catégories de tournois */
 const TIER_COLORS = {
-  challenger:{ bg:'#F3F8F0', surface:'#FFFFFF', ink:'#132A1D', net:'#153452', clay:'#D4632B', line:'#DDE7D9', ball:'#CFEA3E' },
-  atp250:{ bg:'#F0F5F8', surface:'#FFFFFF', ink:'#13222A', net:'#1E4663', clay:'#2B74D4', line:'#D6E3EC', ball:'#5B95BE' },
-  atp500:{ bg:'#EEF3F6', surface:'#FFFFFF', ink:'#11202A', net:'#224F6B', clay:'#2B68D4', line:'#D2E1EC', ball:'#4B879F' },
-  masters:{ bg:'#F4F0F8', surface:'#FFFFFF', ink:'#20132A', net:'#411E63', clay:'#7A2BD4', line:'#E4D6EC', ball:'#8B67B8' },
+  challenger:{ primary:'#647B6C', light:'#EEF3EA', accent:'#8AA48F' },
+  atp250:{ primary:'#3D6A8C', light:'#E7F0F6', accent:'#5B95BE' },
+  atp500:{ primary:'#2C5B75', light:'#E3EFF3', accent:'#4B879F' },
+  masters:{ primary:'#5B3E8C', light:'#EFE7F6', accent:'#8B67B8' },
 };
 
-function applyTheme(tierId, slamId){
-  let c = TIER_COLORS[tierId] || TIER_COLORS.challenger;
-  if(tierId === 'slam'){
-    const s = SLAMS.find(x => x.id === slamId);
-    if(s) c = s.colors;
-  }
-  const root = document.documentElement;
-  root.style.setProperty('--bg', c.bg);
-  root.style.setProperty('--surface', c.surface);
-  root.style.setProperty('--ink', c.ink);
-  root.style.setProperty('--net', c.net);
-  root.style.setProperty('--clay', c.clay);
-  root.style.setProperty('--line', c.line);
-  root.style.setProperty('--ball', c.ball);
+function tournamentColors(tierId, slamId){
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.colors; }
+  return TIER_COLORS[tierId] || TIER_COLORS.challenger;
 }
-
 function tournamentLabel(tierId, slamId){
-  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId); return s ? s.label : 'Grand Chelem'; }
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.label; }
   return TIERS[tierId].label;
 }
 function tournamentSurface(tierId, slamId){
-  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId); return s ? (s.surface + ' · ' + s.place) : ''; }
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.surface + ' · ' + s.place; }
   if(tierId==='masters') return 'Grand rendez-vous du circuit';
   return 'Circuit international';
 }
 
-/* Tactiques diversifiées et contextuelles en demi-finale et finale */
-const SF_TACTICS = [
-  { id:'sf_safe', label:'Sécuriser les longs échanges', tag:'Patience', desc:'Fatigue réduite, vous poussez l’adversaire à la faute.', probMod:-0.03, energyMod:-2 },
-  { id:'sf_attack', label:'Prendre le filet d’assaut', tag:'Offensive', desc:'Risqué mais surprend l’adversaire en fin de tournoi.', probMod:0.06, energyMod:4 },
-  { id:'sf_tempo', label:'Briser le rythme (amorties & slices)', tag:'Variations', desc:'Perturbe la cadence adverse sans puiser dans vos réserves.', probMod:0.02, energyMod:1 }
-];
-
-const FIN_TACTICS = [
-  { id:'fin_clutch', label:'Jouer au plus près des lignes', tag:'Culot maximal', desc:'Vous tentez des coups de génie sous pression.', probMod:0.08, energyMod:6 },
-  { id:'fin_solid', label:'Tenir solidement sa mise en jeu', tag:'Maîtrise', desc:'Vous misez sur la solidité de votre service.', probMod:0.03, energyMod:2 },
-  { id:'fin_psych', label:'Jouer l’épreuve de force mentale', tag:'Intimidation', desc:'Vous poussez l’adversaire à gamberger dans sa tête.', probMod:0.05, energyMod:3 }
+/* Tactiques disponibles en demi-finale et en finale */
+const MATCH_TACTICS = [
+  { id:'prudent', label:'Jouer serré', tag:'Prudence', desc:'Moins de prises de risques, vous économisez des forces.', probMod:-0.06, energyCostMod:-3, injuryMod:-1 },
+  { id:'normal', label:'Garder votre plan de jeu', tag:'Équilibre', desc:'Vous restez fidèle à vos habitudes.', probMod:0, energyCostMod:0, injuryMod:0 },
+  { id:'agressif', label:'Tout risquer', tag:'Audace', desc:'Plus de chances si ça passe, mais fatigue et risques accrus.', probMod:0.09, energyCostMod:5, injuryMod:2 },
 ];
 
 const RANK_BANDS = [
@@ -402,774 +364,891 @@ const FUNNY_EVENTS = [
   {id:'funny_banana',min:16,max:26,title:'La banane officielle',text:'Un spectateur vous tend une banane pendant l’échauffement comme si c’était un trophée.',choices:[
     {label:'La prendre',tag:'Nutrition',desc:'Votre carrière vient de gagner une banane.',effect:p=>{p.energy=clamp(p.energy+5,0,100);log(p,'Une banane vous a été offerte en tribune.');}},
     {label:'Refuser poliment',tag:'Élégance',desc:'Vous gardez votre routine.',effect:p=>{p.stats.mental+=1;log(p,'Vous avez décliné une banane très sérieusement.');}}
+  ]},
+  {id:'funny_towel',min:16,max:28,title:'La serviette porte-bonheur',text:'Vous perdez votre serviette. Elle est retrouvée dans le sac d’un joueur que vous ne connaissez pas.',choices:[
+    {label:'La récupérer',tag:'Mystère',desc:'Personne ne comprend comment.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Votre serviette a voyagé plus que vous.');}},
+    {label:'En prendre une neuve',tag:'Professionnel',desc:'Vous investissez 12 € dans la paix intérieure.',effect:p=>{p.money=Math.max(0,p.money-12);log(p,'Nouvelle serviette, nouvelle vie.');}}
+  ]},
+  {id:'funny_mic',min:16,max:30,title:'Le micro reste allumé',text:'Vous pensez que l’interview est terminée. Le micro est encore ouvert.',choices:[
+    {label:'Rester naturel',tag:'Sincérité',desc:'Votre phrase devient un petit meme.',effect:p=>{p.rep=clamp(p.rep+5,0,100);log(p,'Votre micro est resté ouvert au mauvais moment.');}},
+    {label:'Faire comme si',tag:'Sang-froid',desc:'Personne ne saura jamais.',effect:p=>{p.stats.mental+=2;log(p,'Vous avez survécu à un micro ouvert.');}}
+  ]},
+  {id:'funny_weather',min:16,max:30,title:'Pluie de confettis',text:'Un mariage à côté du club déclenche une pluie de confettis sur votre terrain.',choices:[
+    {label:'Continuer',tag:'Focus',desc:'Vous jouez sous les confettis.',effect:p=>{p.stats.mental+=2;p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez joué sous une pluie de confettis.');}},
+    {label:'Faire une pause',tag:'Spectacle',desc:'Tout le monde prend une photo.',effect:p=>{p.rep=clamp(p.rep+3,0,100);log(p,'Votre entraînement est devenu une séance photo.');}}
+  ]},
+  {id:'funny_wronghotel',min:17,max:29,title:'Mauvais hôtel',text:'Vous entrez dans le mauvais hôtel avec votre sac de tennis. Personne ne vous arrête.',choices:[
+    {label:'Continuer',tag:'Aventure',desc:'Vous découvrez le meilleur petit-déjeuner de la ville.',effect:p=>{p.energy=clamp(p.energy+3,0,100);p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez dormi dans le mauvais hôtel.');}},
+    {label:'Faire demi-tour',tag:'Prudence',desc:'Retour au bon hôtel, sans explication.',effect:p=>{p.stats.mental+=1;log(p,'Vous avez retrouvé votre hôtel à temps.');}}
+  ]},
+  {id:'funny_dog',min:16,max:28,title:'Le chien veut jouer',text:'Un chien récupère une balle et refuse de la rendre pendant l’entraînement.',choices:[
+    {label:'Lancer une autre balle',tag:'Diplomatie',desc:'Problème réglé en 4 secondes.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Un chien a remporté un échange.');}},
+    {label:'Négocier',tag:'Mental',desc:'Vous découvrez que le chien ne négocie pas.',effect:p=>{p.stats.mental+=2;log(p,'Négociation perdue contre un chien.');}}
+  ]},
+  {id:'funny_celebrity',min:18,max:30,title:'Une célébrité vous confond',text:'Une célébrité vous demande un autographe. Elle pense que vous êtes déjà une star.',choices:[
+    {label:'Signer',tag:'Confiance',desc:'Vous signez sans corriger l’erreur.',effect:p=>{p.morale=clamp(p.morale+8,0,100);log(p,'Vous avez signé un autographe par erreur.');}},
+    {label:'Expliquer',tag:'Humilité',desc:'Vous expliquez que vous êtes encore classé loin.',effect:p=>{p.stats.mental+=1;log(p,'Une célébrité vous a pris pour une star.');}}
+  ]},
+  {id:'funny_ball',min:16,max:27,title:'La balle disparaît',text:'Une balle frappe une bâche et disparaît pendant cinq minutes.',choices:[
+    {label:'La chercher',tag:'Patience',desc:'Vous la retrouvez derrière une glacière.',effect:p=>{p.stats.mental+=1;log(p,'Une balle a disparu pendant l’entraînement.');}},
+    {label:'En prendre une autre',tag:'Efficacité',desc:'Vous avez perdu 90 secondes.',effect:p=>{p.energy=clamp(p.energy+1,0,100);log(p,'Une balle a été officiellement déclarée disparue.');}}
+  ]},
+  {id:'funny_wrongname',min:16,max:30,title:'Votre nom est mal écrit',text:'Le tableau affiche votre nom avec une faute. Une énorme faute.',choices:[
+    {label:'Rire',tag:'Détente',desc:'La photo circule dans le vestiaire.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Le tableau a massacré votre nom.');}},
+    {label:'Corriger',tag:'Sérieux',desc:'Le tableau est réparé avant le match.',effect:p=>{p.rep=clamp(p.rep+2,0,100);log(p,'Votre nom a été corrigé sur le tableau.');}}
+  ]},
+  {id:'funny_pigeon',min:16,max:30,title:'Un pigeon sur la chaise',text:'Un pigeon s’installe sur votre chaise de repos et ne veut plus partir.',choices:[
+    {label:'Lui laisser la place',tag:'Respect',desc:'Vous êtes officiellement le deuxième joueur du match.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Un pigeon a pris votre chaise.');}},
+    {label:'Récupérer la chaise',tag:'Autorité',desc:'Le pigeon gagne le duel psychologique.',effect:p=>{p.stats.mental+=1;log(p,'Vous avez perdu un duel contre un pigeon.');}}
+  ]},
+  {id:'funny_music',min:16,max:28,title:'La mauvaise musique',text:'La musique du court lance une chanson beaucoup trop entraînante juste avant votre séance.',choices:[
+    {label:'Danser 10 secondes',tag:'Énergie',desc:'Le coach fait semblant de ne rien voir.',effect:p=>{p.energy=clamp(p.energy+4,0,100);p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez dansé avant l’entraînement.');}},
+    {label:'Rester sérieux',tag:'Discipline',desc:'Vous ne bougez pas d’un centimètre.',effect:p=>{p.stats.mental+=2;log(p,'Vous avez résisté à la musique.');}}
+  ]},
+  {id:'funny_icecream',min:16,max:27,title:'La glace du tournoi',text:'Le vendeur vous offre une glace parce qu’il pense que vous avez gagné le tournoi.',choices:[
+    {label:'Accepter',tag:'Récompense',desc:'Vous n’avez même pas joué la finale.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Une glace vous a été offerte par erreur.');}},
+    {label:'Expliquer',tag:'Honnêteté',desc:'Le vendeur vous offre quand même un cornet.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Vous avez refusé de vous faire passer pour un champion.');}}
+  ]},
+  {id:'funny_umbrella',min:16,max:29,title:'Parapluie géant',text:'Un spectateur ouvre un parapluie immense au bord du court. Vous ne voyez plus la ligne.',choices:[
+    {label:'Demander gentiment',tag:'Fair-play',desc:'Le parapluie descend immédiatement.',effect:p=>{p.morale=clamp(p.morale+2,0,100);log(p,'Un parapluie a bloqué votre vision.');}},
+    {label:'Viser au hasard',tag:'Improvisation',desc:'Étonnamment, vous gagnez un point.',effect:p=>{p.stats.technique+=1;log(p,'Vous avez joué un point sans voir la ligne.');}}
+  ]},
+  {id:'funny_raincoat',min:16,max:28,title:'Le k-way porte-malheur',text:'Votre coach vous interdit un k-way précis. Vous ne savez pas pourquoi.',choices:[
+    {label:'L’écouter',tag:'Coach',desc:'Vous jouez avec votre équipement habituel.',effect:p=>{p.stats.mental+=1;log(p,'Le coach a déclaré un k-way maudit.');}},
+    {label:'Le porter quand même',tag:'Provocation',desc:'Il ne se passe absolument rien.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Vous avez défié la légende du k-way maudit.');}}
   ]}
 ];
 
-/* ============ ETAT DU JEU ============ */
-let state = {
-  screen:'welcome',
-  creationStep:1,
-  player:{
-    name:'',
-    nation:'fr',
-    style:'fond',
-    bg:'academie',
-    age:16,
-    stats:{technique:45,service:45,physique:45,mental:45},
-    energy:100,
-    morale:80,
-    money:3000,
-    rep:5,
-    points:0,
-    rank:1200,
-    prevRank:1200,
-    titles:{slam:0,masters:0,atp500:0,atp250:0,challenger:0},
-    injuries:[],
-    history:[],
-  },
-  calendar:{
-    week:1,
-    year:2026,
-    activeTourn:null,
-    currentSlamOffer:null
-  },
-  tournament:{
-    tier:'challenger',
-    slamId:null,
-    roundIdx:0,
-    opponent:null,
-    history:[],
-    stage:'hub',
-    tactic:null
-  },
-  journal:[],
-  statsDelta:null
-};
+const FUNNY_VARIANTS = [
+{id:'fv_courtkey',min:16,max:30,title:'La clé du court',text:'Tu fermes le court et réalises que la clé est restée de l’autre côté du grillage.',choices:[
+{label:'Escalader',tag:'Agilité',desc:'Ton échauffement est terminé.',effect:p=>{p.stats.physique+=1;log(p,'Tu as escaladé un grillage pour récupérer une clé.');}},
+{label:'Appeler le club',tag:'Patience',desc:'Quelqu’un arrive avec une autre clé.',effect:p=>{p.morale=clamp(p.morale+3,0,100);log(p,'Une clé de court a lancé une mini-aventure.');}}]},
+{id:'fv_tennisballbag',min:16,max:28,title:'Le sac mystérieux',text:'Tu ouvres ton sac et trouves trois balles qui ne sont pas à toi.',choices:[
+{label:'Les rendre',tag:'Fair-play',desc:'Le propriétaire apparaît cinq minutes plus tard.',effect:p=>{p.rep=clamp(p.rep+3,0,100);log(p,'Trois balles mystérieuses ont retrouvé leur propriétaire.');}},
+{label:'Les tester',tag:'Curiosité',desc:'Elles rebondissent bizarrement.',effect:p=>{p.stats.technique+=1;log(p,'Tu as testé trois balles inconnues.');}}]},
+{id:'fv_scoreboard',min:16,max:30,title:'Le tableau délire',text:'Le tableau affiche 99–0 en ta faveur avant même le début du match.',choices:[
+{label:'Prendre une photo',tag:'Souvenir',desc:'Tu gardes la meilleure victoire imaginaire de ta carrière.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Le tableau a annoncé une victoire avant le match.');}},
+{label:'Le signaler',tag:'Sérieux',desc:'Le score revient à zéro.',effect:p=>{p.stats.mental+=1;log(p,'Le tableau a été réinitialisé.');}}]},
+{id:'fv_shoelace',min:16,max:30,title:'Le lacet rebelle',text:'Ton lacet se défait exactement au moment où tu fais ton meilleur déplacement.',choices:[
+{label:'Faire une pause',tag:'Sécurité',desc:'Tu refais le nœud et repars.',effect:p=>{p.energy=clamp(p.energy+2,0,100);log(p,'Un lacet a interrompu un déplacement parfait.');}},
+{label:'Continuer',tag:'Panache',desc:'Tu ne le referas plus jamais.',effect:p=>{p.stats.mental+=1;log(p,'Tu as joué avec un lacet défait.');}}]},
+{id:'fv_ballmachine',min:17,max:30,title:'La machine s’emballe',text:'La machine à balles se met à envoyer deux balles à la fois.',choices:[
+{label:'Esquiver',tag:'Réflexes',desc:'Tu transformes ça en exercice.',effect:p=>{p.stats.physique+=2;log(p,'La machine à balles a doublé la cadence.');}},
+{label:'L’arrêter',tag:'Calme',desc:'Tu appuies sur le bouton rouge.',effect:p=>{p.stats.mental+=1;log(p,'Tu as vaincu une machine à balles.');}}]},
+{id:'fv_wrongshirt',min:16,max:29,title:'Le mauvais maillot',text:'Tu arrives avec le maillot d’un ancien tournoi. Personne ne remarque la différence.',choices:[
+{label:'Assumer',tag:'Style',desc:'Ton équipement devient une tendance locale.',effect:p=>{p.rep=clamp(p.rep+3,0,100);log(p,'Ancien maillot, nouveau style.');}},
+{label:'Changer',tag:'Pro',desc:'Tu repars avec la tenue officielle.',effect:p=>{p.morale=clamp(p.morale+2,0,100);log(p,'Tu as corrigé une petite erreur de tenue.');}}]},
+{id:'fv_clock',min:16,max:30,title:'L’horloge avance à l’envers',text:'L’horloge du club indique 08:12 alors qu’il est clairement 16:12.',choices:[
+{label:'La croire',tag:'Confiance',desc:'Tu arrives huit heures trop tôt demain.',effect:p=>{p.stats.mental+=1;log(p,'L’horloge du club a menti.');}},
+{label:'Vérifier',tag:'Précision',desc:'Tu évites une très longue matinée.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Tu as découvert une horloge cassée.');}}]},
+{id:'fv_autograph',min:18,max:30,title:'Autographe sur une balle',text:'Un enfant te demande de signer une balle. Tu signes tellement gros qu’il ne peut plus jouer avec.',choices:[
+{label:'Signer plus petit',tag:'Gentillesse',desc:'La balle est sauvée.',effect:p=>{p.rep=clamp(p.rep+5,0,100);log(p,'Tu as signé une balle deux fois.');}},
+{label:'Assumer',tag:'Souvenir',desc:'La signature prend la moitié de la balle.',effect:p=>{p.morale=clamp(p.morale+5,0,100);log(p,'Ta signature a pris toute la balle.');}}]},
+{id:'fv_courtname',min:16,max:28,title:'Le court a changé de nom',text:'Ton coach t’envoie sur le court 4. Le club l’a renommé « Court Nadal » pendant la nuit.',choices:[
+{label:'Suivre',tag:'Tradition',desc:'Tu trouves le bon terrain.',effect:p=>{p.morale=clamp(p.morale+2,0,100);log(p,'Le club a renommé un court pendant la nuit.');}},
+{label:'Demander',tag:'Précision',desc:'Tu apprends qu’un sponsor a payé le changement.',effect:p=>{p.rep=clamp(p.rep+2,0,100);log(p,'Un sponsor a rebaptisé le court.');}}]},
+{id:'fv_loudspeaker',min:16,max:30,title:'Le haut-parleur te félicite',text:'Le speaker annonce ton nom alors que tu n’as encore rien gagné.',choices:[
+{label:'Saluer',tag:'Confiance',desc:'Tu salues quand même.',effect:p=>{p.morale=clamp(p.morale+6,0,100);log(p,'Le speaker t’a félicité trop tôt.');}},
+{label:'Rester discret',tag:'Humilité',desc:'Tu retournes t’entraîner.',effect:p=>{p.stats.mental+=1;log(p,'Tu as ignoré une fausse célébration.');}}]},
+{id:'fv_racketcover',min:16,max:30,title:'La housse introuvable',text:'Tu retrouves ta housse dans le coffre d’un joueur qui porte exactement le même prénom.',choices:[
+{label:'Vérifier',tag:'Calme',desc:'Mystère résolu.',effect:p=>{p.morale=clamp(p.morale+3,0,100);log(p,'Ta housse a voyagé dans le mauvais coffre.');}},
+{label:'Récupérer',tag:'Instinct',desc:'Tu prends la bonne après comparaison.',effect:p=>{p.stats.mental+=1;log(p,'Deux housses presque identiques ont créé un quiproquo.');}}]},
+{id:'fv_tennisjudge',min:17,max:30,title:'L’arbitre connaît ton voisin',text:'L’arbitre te demande si tu vas bien parce qu’il connaît ton voisin de palier.',choices:[
+{label:'Discuter',tag:'Social',desc:'Vous parlez trente secondes avant le match.',effect:p=>{p.rep=clamp(p.rep+2,0,100);log(p,'L’arbitre connaissait ton voisin.');}},
+{label:'Se concentrer',tag:'Focus',desc:'Tu retournes à ton échauffement.',effect:p=>{p.stats.mental+=1;log(p,'Tu es resté concentré malgré une drôle de coïncidence.');}}]},
+{id:'fv_wrongwater',min:16,max:30,title:'La bouteille surprise',text:'Tu prends ta bouteille et découvres qu’elle contient de l’eau pétillante.',choices:[
+{label:'Boire quand même',tag:'Impro',desc:'Tu prends une gorgée et regrettes immédiatement.',effect:p=>{p.morale=clamp(p.morale+3,0,100);log(p,'Tu as découvert une bouteille gazeuse au mauvais moment.');}},
+{label:'Changer',tag:'Routine',desc:'Tu récupères ta bouteille habituelle.',effect:p=>{p.energy=clamp(p.energy+2,0,100);log(p,'Ta routine hydratation a survécu.');}}]},
+{id:'fv_tiebreak',min:18,max:32,title:'Le tie-break imaginaire',text:'À l’entraînement, ton coach annonce « balle de match » alors que le score est 2–2.',choices:[
+{label:'Jouer à fond',tag:'Compétition',desc:'Tout le monde se prend au jeu.',effect:p=>{p.stats.mental+=2;p.morale=clamp(p.morale+3,0,100);log(p,'Un tie-break imaginaire a réveillé tout le groupe.');}},
+{label:'Rappeler le score',tag:'Lucidité',desc:'Ton coach répond : « Justement. »',effect:p=>{p.stats.mental+=1;log(p,'Le coach a inventé une balle de match.');}}]},
+{id:'fv_rainroof',min:16,max:30,title:'Le toit fait un bruit énorme',text:'Une goutte tombe sur le toit du court couvert. Tout le monde croit que c’est la pluie.',choices:[
+{label:'Continuer',tag:'Concentration',desc:'Le silence revient.',effect:p=>{p.stats.mental+=2;log(p,'Une seule goutte a créé une fausse alerte météo.');}},
+{label:'Regarder dehors',tag:'Curiosité',desc:'Il fait grand soleil.',effect:p=>{p.morale=clamp(p.morale+4,0,100);log(p,'Fausse alerte météo au club.');}}]}
+];
 
-function log(p, text){
-  p.history.unshift({week:state.calendar.week, year:state.calendar.year, text});
-  if(p.history.length > 50) p.history.pop();
+const EVENTS = [
+  { id:'academie_offer', min:16, max:18,
+    title:'Une académie vous repère',
+    text:'Une académie réputée vous propose de la rejoindre, loin de chez vous.',
+    choices:[
+      {label:'Partir', tag:'Ambition', desc:'Plus de technique, moins de moral au début.', effect:p=>{p.stats.technique+=6; p.morale=clamp(p.morale-10,0,100); log(p,'Vous rejoignez une académie loin de chez vous.');}},
+      {label:'Rester dans votre club', tag:'Stabilité', desc:'Progression plus lente, entourage rassurant.', effect:p=>{p.stats.mental+=5; p.morale=clamp(p.morale+6,0,100); log(p,'Vous restez dans votre club formateur.');}}
+    ]},
+  { id:'first_sponsor', min:17, max:23,
+    title:'Premier contrat sponsor',
+    text:'Une marque de sport vous propose un petit contrat.',
+    choices:[
+      {label:'Signer', tag:'Revenus', desc:'Argent en plus, un peu de pression en plus.', effect:p=>{p.money+=4000; p.sponsors++; p.morale=clamp(p.morale-3,0,100); log(p,'Vous signez votre premier contrat sponsor.');}},
+      {label:'Rester libre', tag:'Liberté', desc:'Pas d\'argent, mais l\'esprit tranquille.', effect:p=>{p.morale=clamp(p.morale+4,0,100); log(p,'Vous refusez toute sponsorisation.');}}
+    ]},
+  { id:'wrist_pain', min:18, max:34,
+    title:'Douleur au poignet',
+    text:'Une gêne persiste juste avant une période chargée.',
+    choices:[
+      {label:'Jouer quand même', tag:'Risque', desc:'Aucun retard, mais risque de blessure.', effect:p=>{p.energy=clamp(p.energy-10,0,100); if(rand(1,100)<=35){ injure(p,'poignet'); } else { log(p,'Le poignet tient malgré la douleur.'); }}},
+      {label:'Faire une pause', tag:'Prudence', desc:'Vous perdez du temps, mais protégez votre corps.', effect:p=>{p.energy=clamp(p.energy+15,0,100); p.stats.physique+=1; log(p,'Vous faites une pause pour soigner votre poignet.');}}
+    ]},
+  { id:'rivalry', min:18, max:30,
+    title:'Une rivalité s\'installe',
+    text:'Un joueur de votre âge monte vite et devient votre rival aux yeux de tous.',
+    choices:[
+      {label:'Vous préparer contre lui', tag:'Obsession', desc:'Mental et technique en hausse, plus de fatigue.', effect:p=>{p.stats.mental+=5; p.stats.technique+=3; p.energy=clamp(p.energy-8,0,100); log(p,'Vous préparez votre rivalité en détail.');}},
+      {label:'Ne pas y penser', tag:'Sérénité', desc:'Moral stable, progression plus régulière.', effect:p=>{p.morale=clamp(p.morale+6,0,100); p.stats.mental+=2; log(p,'Vous ignorez la rivalité médiatique.');}}
+    ]},
+  { id:'coach_change', min:19, max:32,
+    title:'Un coach de renom',
+    text:'Un entraîneur connu propose de superviser votre carrière.',
+    choices:[
+      {label:'L\'engager', tag:'Investissement', desc:'Coûteux, mais net progrès technique.', effect:p=>{p.money=Math.max(0,p.money-8000); p.stats.technique+=8; p.stats.service+=4; log(p,'Vous engagez un coach reconnu.');}},
+      {label:'Garder votre équipe', tag:'Fidélité', desc:'Gratuit, progression plus lente.', effect:p=>{p.stats.mental+=3; log(p,'Vous restez avec votre équipe actuelle.');}}
+    ]},
+  { id:'personal_life', min:20, max:33,
+    title:'Une vie à côté du tennis',
+    text:'Une relation sérieuse prend de la place dans votre quotidien.',
+    choices:[
+      {label:'Prendre le temps de la vivre', tag:'Équilibre', desc:'Moral en hausse, forme légèrement en baisse.', effect:p=>{p.morale=clamp(p.morale+14,0,100); p.energy=clamp(p.energy-4,0,100); log(p,'Vous gardez un équilibre de vie.');}},
+      {label:'Tout sacrifier au tennis', tag:'Abnégation', desc:'Plus de technique et de physique, isolement.', effect:p=>{p.stats.technique+=3; p.stats.physique+=3; p.morale=clamp(p.morale-10,0,100); log(p,'Vous sacrifiez votre vie personnelle.');}}
+    ]},
+  { id:'media_pressure', min:20, max:34,
+    title:'Pression médiatique',
+    text:'Après des résultats en dents de scie, la presse commence à douter de vous.',
+    choices:[
+      {label:'Rester calme', tag:'Sang-froid', desc:'Mental renforcé sur la durée.', effect:p=>{p.stats.mental+=6; log(p,'Vous encaissez la pression sans broncher.');}},
+      {label:'Répondre publiquement', tag:'Coup d\'éclat', desc:'Réputation en hausse, moral plus fragile.', effect:p=>{p.rep=clamp(p.rep+8,0,100); p.morale=clamp(p.morale-8,0,100); log(p,'Vous répondez à vos détracteurs.');}}
+    ]},
+  { id:'racket_tech', min:19, max:29,
+    title:'Nouvelle raquette',
+    text:'Votre équipementier propose un nouveau modèle à tester.',
+    choices:[
+      {label:'L\'adopter', tag:'Adaptation', desc:'Réglages risqués, gain technique ensuite.', effect:p=>{p.energy=clamp(p.energy-6,0,100); p.stats.technique+=7; log(p,'Vous adoptez du nouveau matériel.');}},
+      {label:'Garder votre matériel', tag:'Constance', desc:'Rien ne change, stabilité assurée.', effect:p=>{p.stats.mental+=2; log(p,'Vous gardez votre matériel habituel.');}}
+    ]},
+  { id:'sponsor_renew', min:23, max:33,
+    title:'Fin de contrat sponsor',
+    text:'C\'est l\'heure de renégocier votre contrat d\'équipementier.',
+    choices:[
+      {label:'Négocier fort', tag:'Ambition', desc:'Gros gain si le classement suit, sinon peu.', effect:p=>{ const bonus = p.rank<=100 ? rand(15000,60000) : rand(0,3000); p.money += bonus; p.sponsors++; log(p, bonus>3000 ? 'Vous décrochez un contrat lucratif.' : 'La négociation reste modeste.'); }},
+      {label:'Signer vite', tag:'Sécurité', desc:'Montant correct, sans surprise.', effect:p=>{p.money+=rand(5000,12000); p.sponsors++; log(p,'Vous signez rapidement un nouveau contrat.');}}
+    ]},
+  { id:'chronic_back', min:26, max:34,
+    title:'Douleurs au dos',
+    text:'Des douleurs récurrentes s\'installent, signe de l\'usure du circuit.',
+    choices:[
+      {label:'Opérer', tag:'Chirurgie', desc:'Saison quasi blanche, soulagement durable.', effect:p=>{p.energy=clamp(p.energy-30,0,100); p.stats.physique+=6; p.skipSeason=true; log(p,'Vous passez par la case opération.');}},
+      {label:'Faire de la kiné', tag:'Gestion', desc:'Vous continuez, au risque d\'une rechute.', effect:p=>{ if(rand(1,100)<=30){ injure(p,'dos'); } else { p.stats.physique=clamp(p.stats.physique-2,0,100); log(p,'Vous gérez vos douleurs au dos.'); } }}
+    ]},
+  { id:'late_retirement', min:31, max:36,
+    title:'Les jambes parlent',
+    text:'La récupération est plus longue qu\'avant.',
+    choices:[
+      {label:'Continuer à fond', tag:'Résistance', desc:'Un dernier élan, au prix du corps.', effect:p=>{p.stats.mental+=5; p.energy=clamp(p.energy-10,0,100); log(p,'Vous refusez de lever le pied.');}},
+      {label:'Alléger la préparation', tag:'Lucidité', desc:'Vous durez plus longtemps, en douceur.', effect:p=>{p.energy=clamp(p.energy+12,0,100); p.stats.physique=clamp(p.stats.physique-1,0,100); log(p,'Vous adaptez votre préparation.');}}
+    ]},
+  { id:'investment', min:28, max:34,
+    title:'Préparer l\'après',
+    text:'On vous propose d\'investir dans une académie à votre nom.',
+    choices:[
+      {label:'Investir', tag:'Long terme', desc:'Coûteux maintenant, utile plus tard.', effect:p=>{p.money=Math.max(0,p.money-20000); p.rep=clamp(p.rep+10,0,100); log(p,'Vous investissez dans une académie.');}},
+      {label:'Garder vos gains', tag:'Prudence', desc:'Rien ne change pour l\'instant.', effect:p=>{ log(p,'Vous gardez vos gains de côté.'); }}
+    ]},
+];
+
+const CALENDAR_OPTIONS = [
+  { id:'leger', tag:'Léger', label:'Calendrier léger', desc:'Peu de petits tournois, corps préservé.' },
+  { id:'standard', tag:'Standard', label:'Calendrier standard', desc:'Un rythme classique, équilibré.' },
+  { id:'intensif', tag:'Intensif', label:'Calendrier intensif', desc:'Beaucoup de petits tournois, plus de risques.' },
+];
+
+/* ============ ÉTAT ============ */
+let player = null;
+let usedEvents = [];
+let usedFunnyEvents = [];
+let usedSeriousEvents = [];
+let pendingEvent = null;
+let calendarChoice = null;
+
+function log(p, text){ p.journal.push({season:p.season, age:p.age, text}); }
+function injure(p, zone){
+  p.stats.physique = clamp(p.stats.physique - rand(3,8), 8, 100);
+  p.energy = clamp(p.energy - rand(10,22), 0, 100);
+  p.injuries.push({season:p.season, zone});
+  log(p, `Blessure au ${zone}. Saison compliquée.`);
 }
 
-/* ============ MOTEUR DE RENDU ============ */
-function render(){
-  const app = document.getElementById('app');
-  if(!app) return;
+let creation = { name:'', nation:null, style:null, background:null };
 
-  // S'assurer que le thème par défaut s'applique hors tournoi
-  if(state.screen !== 'tournament'){
-    applyTheme('challenger', null);
+function newPlayer(){
+  const base = 55;
+  const stats = { technique:base+rand(-3,3), service:base+rand(-3,3), physique:base+rand(-3,3), mental:base+rand(-3,3) };
+  [creation.style.mod, creation.background.mod].forEach(mod=>{
+    for(const k in mod){ stats[k] = clamp(stats[k] + mod[k], 5, 95); }
+  });
+  return {
+    name: creation.name || 'Joueur inconnu',
+    nation: creation.nation, style: creation.style, background: creation.background,
+    age:16, season:1, stats,
+    energy:85, morale:65, rep:creation.background.rep, money:creation.background.money,
+    points:650, rank:250, prevRank:250,
+    titles:{ challenger:0, atp250:0, atp500:0, masters:0, slam:0 },
+    bestRank:1400, sponsors:0, injuries:[], seasonsPlayed:0,
+    journal:[], phase:'event', retired:false, forcedRetire:false, skipSeason:false,
+    lastRecap:null, lastDecisionGain:null, lastTournamentResult:null, seasonRun:null,
+  };
+}
+
+/* ============ CALENDRIER DE BASE (petits tournois) ============ */
+function planSeason(rank, intensityId, age){
+  const mult = intensityId==='leger' ? 0.55 : intensityId==='intensif' ? 1.6 : 1;
+  const fill = (tier,n) => Array(Math.max(0, Math.round(n*mult))).fill(tier);
+  let plan = [];
+  if(age>=21){
+    if(rank>800) plan=[...fill('challenger',3),...fill('atp250',3)];
+    else if(rank>500) plan=[...fill('challenger',1),...fill('atp250',4),...fill('atp500',2)];
+    else if(rank>250) plan=[...fill('atp250',3),...fill('atp500',3)];
+    else if(rank>100) plan=[...fill('atp500',4)];
+    else plan=[...fill('atp500',2)];
+  }else if(age>=19){
+    if(rank>900) plan=[...fill('challenger',3),...fill('atp250',4)];
+    else if(rank>500) plan=[...fill('challenger',1),...fill('atp250',4),...fill('atp500',2)];
+    else plan=[...fill('atp250',4),...fill('atp500',2)];
+  }else if(age>=17){
+    plan=[...fill('challenger',5),...fill('atp250',2)];
+  }else{
+    plan=[...fill('challenger',5),...fill('atp250',1)];
   }
+  return plan;
+}
 
-  let html = '';
-  switch(state.screen){
-    case 'welcome': html = renderWelcome(); break;
-    case 'creation': html = renderCreation(); break;
-    case 'hub': html = renderHub(); break;
-    case 'slam_prompt': html = renderSlamPrompt(); break;
-    case 'tournament': html = renderTournament(); break;
-    case 'event': html = renderEvent(); break;
-    case 'end': html = renderEnd(); break;
+function skillOf(p){
+  const s = p.stats;
+  const base = s.technique*0.28 + s.service*0.24 + s.physique*0.22 + s.mental*0.26 + 6;
+  const form = (0.78 + 0.4*(p.energy/100)) * (0.85 + 0.3*(p.morale/100));
+  return base * form;
+}
+
+function roundLabel(roundsWon, totalRounds){
+  const labels = ['1er tour','2e tour','3e tour','8es de finale','quarts de finale','demi-finale','finale','Titre 🏆'];
+  const fromEnd = totalRounds - roundsWon;
+  if(roundsWon === totalRounds) return 'Titre 🏆';
+  const idx = Math.max(0, labels.length - 1 - fromEnd);
+  return labels[Math.min(idx, labels.length-2)];
+}
+
+function ageAdjust(p){
+  if(p.age<=23){
+    p.stats.technique = clamp(p.stats.technique + rand(0,2), 5, 99);
+    p.stats.service = clamp(p.stats.service + rand(0,2), 5, 99);
+    p.stats.physique = clamp(p.stats.physique + rand(0,2), 5, 99);
+    p.stats.mental = clamp(p.stats.mental + rand(0,2), 5, 99);
+  } else if(p.age<=29){
+    p.stats.mental = clamp(p.stats.mental + rand(0,1), 5, 99);
+  } else if(p.age<=32){
+    p.stats.physique = clamp(p.stats.physique - rand(0,2), 5, 99);
+  } else {
+    p.stats.physique = clamp(p.stats.physique - rand(1,3), 5, 99);
+    p.stats.service = clamp(p.stats.service - rand(0,1), 5, 99);
   }
-  app.innerHTML = html;
 }
 
-/* --- ACCUEIL --- */
-function renderWelcome(){
-  return `
-    <div class="card welcome-card hero">
-      <div class="ball-hero ball-bounce">${BALL_ICON(80)}</div>
-      <h1>Set <span style="color:var(--ball)">Point</span></h1>
-      <p>Le circuit t'attend. Gère ton énergie, choisis tes tournois sur le moment et trace ton chemin vers la légende du tennis mondial.</p>
-      <button class="btn" style="font-size: 18px; padding: 16px 32px;" onclick="startCreation()">Entrer sur le court</button>
-    </div>
-  `;
-}
-
-function startCreation(){
-  state.screen = 'creation';
-  state.creationStep = 1;
-  render();
-}
-
-/* --- CRÉATION --- */
-function renderCreation(){
-  const p = state.player;
-  let stepContent = '';
-
-  const stepsTotal = 5;
-  let progressHtml = '<div class="creation-progress">';
-  for(let i=1; i<=stepsTotal; i++){
-    progressHtml += `<span class="${i<=state.creationStep?'on':''}"></span>`;
+/* ============ MOTEUR DE SAISON, PAS À PAS ============ */
+function startSeason(p, choice){
+  ageAdjust(p);
+  if(p.skipSeason){
+    p.skipSeason = false;
+    p.lastRecap = { intensity:'Saison blanche', played:0, stopped:true, results:[], titlesThisSeason:[], seasonPoints:0, seasonPrize:0, rankBefore:p.rank, rankAfter:p.rank };
+    log(p, 'Saison blanche après une opération.');
+    p.energy = clamp(p.energy+50,0,100);
+    p.seasonsPlayed++;
+    p.phase = 'recap';
+    render();
+    return;
   }
-  progressHtml += '</div>';
-
-  if(state.creationStep === 1){
-    stepContent = `
-      <div class="stage-h">Ton identité</div>
-      <div class="stage-p">Comment t'appelles-tu sur le circuit ?</div>
-      <div class="field">
-        <label>Nom ou pseudonyme</label>
-        <input type="text" id="playerNameInput" value="${p.name}" placeholder="Ex: Arthur Vant">
-      </div>
-      <button class="btn" onclick="nextCreationStep(1)">Suivant</button>
-    `;
-  } else if(state.creationStep === 2){
-    let opts = NATIONS.map(n=>`
-      <div class="opt ${p.nation===n.id?'sel':''}" onclick="selectNation('${n.id}')">
-        <div class="h">${n.label}</div>
-        <div class="d">${n.slam ? 'Pays du Grand Chelem : '+n.slam : 'Nation de tennis'}</div>
-      </div>
-    `).join('');
-    stepContent = `
-      <div class="stage-h">Ta nation</div>
-      <div class="stage-p">D'où viens-tu ? Cela influence tes attaches.</div>
-      <div class="opt-grid">${opts}</div>
-      <div class="actions">
-        <button class="btn outline" onclick="prevCreationStep()">Retour</button>
-        <button class="btn" onclick="nextCreationStep(2)">Suivant</button>
-      </div>
-    `;
-  } else if(state.creationStep === 3){
-    let opts = STYLES.map(s=>`
-      <div class="opt ${p.style===s.id?'sel':''}" onclick="selectStyle('${s.id}')">
-        <div class="h">${s.label}</div>
-        <div class="d">${s.desc}</div>
-      </div>
-    `).join('');
-    stepContent = `
-      <div class="stage-h">Ton style de jeu</div>
-      <div class="stage-p">Quelles sont tes forces principales sur le court ?</div>
-      <div class="opt-grid">${opts}</div>
-      <div class="actions">
-        <button class="btn outline" onclick="prevCreationStep()">Retour</button>
-        <button class="btn" onclick="nextCreationStep(3)">Suivant</button>
-      </div>
-    `;
-  } else if(state.creationStep === 4){
-    let opts = BACKGROUNDS.map(b=>`
-      <div class="opt ${p.bg===b.id?'sel':''}" onclick="selectBg('${b.id}')">
-        <div class="h">${b.label}</div>
-        <div class="d">${b.desc}</div>
-      </div>
-    `).join('');
-    stepContent = `
-      <div class="stage-h">Ton parcours de formation</div>
-      <div class="stage-p">Où as-tu forgé ton jeu durant ta jeunesse ?</div>
-      <div class="opt-grid">${opts}</div>
-      <div class="actions">
-        <button class="btn outline" onclick="prevCreationStep()">Retour</button>
-        <button class="btn" onclick="nextCreationStep(4)">Suivant</button>
-      </div>
-    `;
-  } else if(state.creationStep === 5){
-    stepContent = `
-      <div class="stage-h">Prêt à entrer sur le court ?</div>
-      <div class="stage-p">Tout est en place pour ton premier tournoi Challenger à 16 ans.</div>
-      <div class="actions">
-        <button class="btn outline" onclick="prevCreationStep()">Retour</button>
-        <button class="btn" onclick="finalizeCreation()">Lancer la carrière</button>
-      </div>
-    `;
-  }
-
-  return `
-    <div class="card">
-      ${progressHtml}
-      ${stepContent}
-    </div>
-  `;
+  const basePlan = planSeason(p.rank, choice.intensity, p.age);
+  const queue = basePlan.map(t=>({tier:t, slamId:null}));
+  Object.keys(choice.slams).forEach(sid=>{ if(choice.slams[sid]) queue.push({tier:'slam', slamId:sid}); });
+  for(let i=0;i<choice.masters;i++){ queue.push({tier:'masters', slamId:null}); }
+  p.seasonRun = {
+    queue, idx:0, results:[], seasonPoints:0, seasonPrize:0, titlesThisSeason:[], stopped:false,
+    current:null, intensityLabel: CALENDAR_OPTIONS.find(c=>c.id===choice.intensity).label,
+  };
+  advanceSeason(p);
 }
 
-function nextCreationStep(step){
-  if(step === 1){
-    const inp = document.getElementById('playerNameInput');
-    if(inp && inp.value.trim()){
-      state.player.name = inp.value.trim();
-    } else {
-      state.player.name = 'Arthur Vant';
+function advanceSeason(p){
+  const run = p.seasonRun;
+  if(!run.current){
+    if(p.energy < 12 || run.idx >= run.queue.length){ finalizeSeason(p); return; }
+    const item = run.queue[run.idx]; run.idx++;
+    const totalRounds = TIERS[item.tier].points.length - 1;
+    run.current = { tier:item.tier, slamId:item.slamId, roundIndex:0, totalRounds, roundsWon:0, injuryBonus:0 };
+  }
+  simulateRounds(p);
+}
+
+function playRound(p, cur, tacticMod){
+  const tier = TIERS[cur.tier];
+  const baseSkill = skillOf(p);
+  const oppSkill = tier.baseOpp + cur.roundIndex*tier.oppInc + rand(-6,6);
+  const eff = baseSkill + rand(-5,5) + 12;
+  const winProb = clamp(eff/(eff+oppSkill) + tacticMod, 0.02, 0.98);
+  const won = Math.random() < winProb;
+  const roundCost = 2 + Math.floor(tier.energyCost / cur.totalRounds);
+  p.energy = clamp(p.energy - roundCost, 0, 100);
+  return won;
+}
+
+function simulateRounds(p){
+  const run = p.seasonRun; const cur = run.current;
+  while(cur.roundIndex < cur.totalRounds){
+    const isSemi = cur.roundIndex === cur.totalRounds - 2;
+    const isFinal = cur.roundIndex === cur.totalRounds - 1;
+    if(isSemi || isFinal){
+      p.phase = 'match_choice';
+      render();
+      return;
     }
+    const won = playRound(p, cur, 0);
+    if(!won){ finishTournament(p, false); return; }
+    cur.roundIndex++;
+    cur.roundsWon++;
   }
-  state.creationStep++;
+  finishTournament(p, true);
+}
+
+function resolveTactic(p, tacticId){
+  const run = p.seasonRun; const cur = run.current;
+  const t = MATCH_TACTICS.find(x=>x.id===tacticId);
+  const won = playRound(p, cur, t.probMod);
+  p.energy = clamp(p.energy - t.energyCostMod, 0, 100);
+  cur.injuryBonus += t.injuryMod;
+  if(!won){ finishTournament(p, false); return; }
+  cur.roundIndex++;
+  cur.roundsWon++;
+  if(cur.roundIndex >= cur.totalRounds){ finishTournament(p, true); return; }
+  simulateRounds(p);
+}
+
+function finishTournament(p, champion){
+  const run = p.seasonRun; const cur = run.current; const tier = TIERS[cur.tier];
+  const points = tier.points[cur.roundsWon];
+  const prize = tier.prize[cur.roundsWon];
+  run.seasonPoints += points;
+  run.seasonPrize += prize;
+  if(champion){ p.titles[cur.tier]++; run.titlesThisSeason.push(tournamentLabel(cur.tier, cur.slamId)); }
+  const res = { tier:cur.tier, slamId:cur.slamId, roundsWon:cur.roundsWon, totalRounds:cur.totalRounds, points, prize, champion };
+  run.results.push(res);
+  const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + cur.injuryBonus;
+  let injured = false;
+  if(rand(1,100) <= injuryChance){ injure(p, choose(['cheville','genou','épaule','dos','poignet'])); injured = true; run.stopped = true; }
+  run.current = null;
+  p.lastTournamentResult = { ...res, injured };
+  p.phase = 'tournament_result';
   render();
 }
-function prevCreationStep(){
-  if(state.creationStep > 1) state.creationStep--;
-  render();
-}
-function selectNation(id){ state.player.nation = id; render(); }
-function selectStyle(id){ state.player.style = id; render(); }
-function selectBg(id){ state.player.bg = id; render(); }
 
-function finalizeCreation(){
-  const p = state.player;
-  const s = STYLES.find(x=>x.id===p.style) || STYLES[0];
-  const b = BACKGROUNDS.find(x=>x.id===p.bg) || BACKGROUNDS[0];
-
-  p.stats.technique = clamp(45 + (s.mod.technique||0) + (b.mod.technique||0), 20, 95);
-  p.stats.service = clamp(45 + (s.mod.service||0) + (b.mod.service||0), 20, 95);
-  p.stats.physique = clamp(45 + (s.mod.physique||0) + (b.mod.physique||0), 20, 95);
-  p.stats.mental = clamp(45 + (s.mod.mental||0) + (b.mod.mental||0), 20, 95);
-
-  p.money = b.money;
-  p.rep = b.rep;
-  p.points = 0;
-  p.rank = pointsToRank(0);
+function finalizeSeason(p){
+  const run = p.seasonRun;
+  p.money += run.seasonPrize;
+  p.points = Math.round(p.points*0.96 + run.seasonPoints);
   p.prevRank = p.rank;
-
-  state.calendar.week = 1;
-  state.calendar.year = 2026;
-  state.screen = 'hub';
-  log(p, 'Début de la carrière professionnelle à 16 ans.');
+  p.rank = pointsToRank(p.points);
+  if(p.rank < p.bestRank) p.bestRank = p.rank;
+  p.seasonsPlayed++;
+  p.energy = clamp(p.energy + 55, 0, 100);
+  p.morale = clamp(p.morale + (p.morale<55 ? 8 : 2), 0, 100);
+  p.lastRecap = {
+    intensity: run.intensityLabel, played: run.results.length, stopped: run.stopped, results: run.results,
+    titlesThisSeason: run.titlesThisSeason, seasonPoints: run.seasonPoints, seasonPrize: run.seasonPrize,
+    rankBefore: p.prevRank, rankAfter: p.rank,
+  };
+  if(run.titlesThisSeason.length){ log(p, `${run.titlesThisSeason.length} titre(s) : ${run.titlesThisSeason.join(', ')}.`); }
+  log(p, `Fin de saison, classement #${p.rank}.`);
+  p.seasonRun = null;
+  p.phase = 'recap';
   render();
 }
 
-/* --- HUB PRINCIPAL --- */
-function renderHub(){
-  const p = state.player;
-  const rankDelta = p.prevRank - p.rank;
-  let deltaHtml = '<span class="rank-delta flat">— stable</span>';
-  if(rankDelta > 0) deltaHtml = `<span class="rank-delta up">▲ +${rankDelta}</span>`;
-  else if(rankDelta < 0) deltaHtml = `<span class="rank-delta down">▼ ${rankDelta}</span>`;
+/* ============ BILAN ============ */
+function legendScore(p){
+  let score = p.titles.slam*100 + p.titles.masters*35 + p.titles.atp500*12 + p.titles.atp250*6 + p.titles.challenger*1.5;
+  if(p.bestRank===1) score += 90;
+  else if(p.bestRank<=5) score += 50;
+  else if(p.bestRank<=10) score += 30;
+  else if(p.bestRank<=50) score += 12;
+  else if(p.bestRank<=100) score += 5;
+  score += Math.floor(p.money/500000);
+  score += p.seasonsPlayed*1.2;
+  score -= p.injuries.length*4;
+  return Math.max(0, Math.round(score));
+}
+function legendRating(score){
+  if(score>=180) return {letter:'S', flavor:'Une carrière hors normes.'};
+  if(score>=110) return {letter:'A', flavor:'Un grand nom du circuit.'};
+  if(score>=60) return {letter:'B', flavor:'Une très belle carrière.'};
+  if(score>=25) return {letter:'C', flavor:'Une carrière solide sur le circuit.'};
+  if(score>=8) return {letter:'D', flavor:'Modeste, mais un rêve vécu.'};
+  return {letter:'E', flavor:'Le circuit ne vous aura pas gardé.'};
+}
+function computeBadges(p){
+  const b = [];
+  if(p.titles.slam>=1) b.push({h:'Champion du Grand Chelem', d:'Vous avez soulevé un trophée majeur.'});
+  if(p.titles.slam>=3) b.push({h:'Multiple champion majeur', d:'Trois titres majeurs ou plus.'});
+  if(p.bestRank===1) b.push({h:'Numéro 1 mondial', d:'Vous avez atteint le sommet.'});
+  if(p.injuries.length===0 && p.seasonsPlayed>=10) b.push({h:'Increvable', d:'Dix saisons sans aucune blessure.'});
+  if(p.seasonsPlayed>=18) b.push({h:'Grande longévité', d:'Une carrière très longue.'});
+  if(p.background.id==='muni' && legendScore(p)>=60) b.push({h:'Parti de rien', d:'Des cours municipaux jusqu\'au sommet.'});
+  const totalTitles = Object.values(p.titles).reduce((a,b)=>a+b,0);
+  if(totalTitles===0 && p.seasonsPlayed>=10) b.push({h:'Pour l\'expérience', d:'Une longue carrière sans trophée.'});
+  if(p.injuries.length>=4) b.push({h:'Corps de guerrier', d:'Quatre blessures ou plus, sans jamais abandonner.'});
+  if(p.money>=5000000) b.push({h:'Fortune du circuit', d:'Plus de 5 millions d\'euros de gains.'});
+  if(!b.length) b.push({h:'Une carrière sur le circuit', d:'Chaque saison a été une bataille.'});
+  return b;
+}
 
-  return `
+/* ============ RENDU ============ */
+const app = document.getElementById('app');
+function render(){
+  if(!player){ renderIntro(); return; }
+  if(player.retired || player.forcedRetire){ renderEnd(); return; }
+  renderGame();
+}
+
+function renderIntro(){
+  app.innerHTML = `
+    <div class="hero">
+      <div class="ball-hero">${BALL_ICON(52)}</div>
+      <h1>Set <span>Point</span></h1>
+      <p>Votre carrière. Votre classement. Votre histoire.</p>
+      <button class="btn" onclick="goToCreation()">Commencer une carrière</button>
+    </div>
+    <div class="footer-note">Gratuit · dans le navigateur · aucune inscription</div>
+  `;
+}
+function goToCreation(){
+  creation = { name:'', nation:NATIONS[0], style:STYLES[0], background:BACKGROUNDS[0], step:0 };
+  renderCreation();
+}
+function renderCreation(){
+  const steps = 6;
+  let content = '';
+
+  if(creation.step === 0){
+    content = `
+      <div class="eyebrow">Création · 1/5</div>
+      <div class="stage-h">Votre nom</div>
+      <div class="stage-p">Simple. Comme sur une feuille de match.</div>
+      <div class="field"><input type="text" id="nameInput" placeholder="Prénom Nom" value="${creation.name}"></div>
+    `;
+  } else if(creation.step === 1){
+    content = `
+      <div class="eyebrow">Création · 2/5</div>
+      <div class="stage-h">Nationalité</div>
+      <div class="stage-p">Choisissez votre pays.</div>
+      <div class="opt-grid" id="nationGrid"></div>
+    `;
+  } else if(creation.step === 2){
+    content = `
+      <div class="eyebrow">Création · 3/5</div>
+      <div class="stage-h">Style de jeu</div>
+      <div class="stage-p">Votre identité sur le court.</div>
+      <div class="opt-grid" id="styleGrid"></div>
+    `;
+  } else if(creation.step === 3){
+    content = `
+      <div class="eyebrow">Création · 4/5</div>
+      <div class="stage-h">Formation</div>
+      <div class="stage-p">Comment avez-vous appris à jouer ?</div>
+      <div class="opt-grid" id="bgGrid"></div>
+    `;
+  } else if(creation.step === 4){
+    content = `
+      <div class="eyebrow">Création · 5/5</div>
+      <div class="stage-h">Prêt pour le circuit</div>
+      <div class="recap-row"><span class="l">Joueur</span><span class="r">${creation.name || 'Joueur'}</span></div>
+      <div class="recap-row"><span class="l">Pays</span><span class="r">${creation.nation.label}</span></div>
+      <div class="recap-row"><span class="l">Style</span><span class="r">${creation.style.label}</span></div>
+      <div class="recap-row"><span class="l">Formation</span><span class="r">${creation.background.label}</span></div>
+    `;
+  }
+
+  app.innerHTML = `
+    <div class="card" style="max-width:620px;margin:26px auto;">
+      <div class="creation-progress">${Array.from({length:steps},(_,i)=>`<span class="${i<=creation.step?'on':''}"></span>`).join('')}</div>
+      ${content}
+      <div class="actions">
+        ${creation.step>0 ? `<button class="btn outline" onclick="creation.step--; renderCreation()">←</button>` : `<button class="btn outline" onclick="player=null; render()">Retour</button>`}
+        ${creation.step===0 ? `<button class="btn" onclick="creationNext()">Continuer →</button>` : ''}
+        ${creation.step===4 ? `<button class="btn" onclick="startCareer()">Entrer sur le circuit</button>` : ''}
+      </div>
+    </div>
+  `;
+
+  if(creation.step===0){
+    const input=document.getElementById('nameInput');
+    input.addEventListener('input',e=>creation.name=e.target.value);
+    input.focus();
+  }
+
+  if(creation.step===1){
+    const grid=document.getElementById('nationGrid');
+    NATIONS.forEach(n=>{
+      const d=document.createElement('div');
+      d.className='opt'+(creation.nation.id===n.id?' sel':'');
+      d.innerHTML=`<div class="h">${n.label}</div><div class="d">${n.slam || 'Circuit international'}</div>`;
+      d.onclick=()=>{creation.nation=n; creation.step=2; renderCreation();};
+      grid.appendChild(d);
+    });
+  }
+
+  if(creation.step===2){
+    const grid=document.getElementById('styleGrid');
+    STYLES.forEach(x=>{
+      const d=document.createElement('div');
+      d.className='opt'+(creation.style.id===x.id?' sel':'');
+      d.innerHTML=`<div class="h">${x.label}</div><div class="d">${x.desc}</div>`;
+      d.onclick=()=>{creation.style=x; creation.step=3; renderCreation();};
+      grid.appendChild(d);
+    });
+  }
+
+  if(creation.step===3){
+    const grid=document.getElementById('bgGrid');
+    BACKGROUNDS.forEach(x=>{
+      const d=document.createElement('div');
+      d.className='opt'+(creation.background.id===x.id?' sel':'');
+      d.innerHTML=`<div class="h">${x.label}</div><div class="d">${x.desc}</div>`;
+      d.onclick=()=>{creation.background=x; creation.step=4; renderCreation();};
+      grid.appendChild(d);
+    });
+  }
+}
+
+function creationNext(){
+  const input=document.getElementById('nameInput');
+  creation.name=input ? input.value.trim() : creation.name;
+  if(!creation.name){
+    input && input.focus();
+    return;
+  }
+  creation.step=1;
+  renderCreation();
+}
+
+function startCareer(){ player = newPlayer(); usedEvents = []; usedFunnyEvents = []; usedSeriousEvents = []; render(); }
+function pickEvent(p){
+  const ALL_FUNNY_EVENTS = FUNNY_EVENTS.concat(FUNNY_VARIANTS);
+  const eligibleFunny = ALL_FUNNY_EVENTS.filter(e => p.age>=e.min && p.age<=e.max);
+  const eligibleSerious = EVENTS.filter(e => p.age>=e.min && p.age<=e.max);
+  let funny = eligibleFunny.filter(e => !usedFunnyEvents.includes(e.id));
+  let serious = eligibleSerious.filter(e => !usedSeriousEvents.includes(e.id));
+
+  let pool, isFunny;
+  if(Math.random() < 0.68 && funny.length){ pool = funny; isFunny = true; }
+  else if(serious.length){ pool = serious; isFunny = false; }
+  else if(funny.length){ pool = funny; isFunny = true; }
+  else {
+    if(eligibleFunny.length){ usedFunnyEvents = []; funny = eligibleFunny; }
+    if(eligibleSerious.length){ usedSeriousEvents = []; serious = eligibleSerious; }
+    if(Math.random() < 0.68 && funny.length){ pool = funny; isFunny = true; }
+    else { pool = serious.length ? serious : funny; isFunny = !serious.length; }
+  }
+  const ev = choose(pool);
+  if(isFunny) usedFunnyEvents.push(ev.id); else usedSeriousEvents.push(ev.id);
+  usedEvents.push(ev.id);
+  return ev;
+}
+
+function renderGame(){
+  const p = player;
+  const deltaVal = p.prevRank - p.rank;
+  const deltaClass = deltaVal>0 ? 'up' : deltaVal<0 ? 'down' : 'flat';
+  const deltaText = p.seasonsPlayed===0 ? '—' : (deltaVal>0 ? '▲ '+deltaVal : deltaVal<0 ? '▼ '+Math.abs(deltaVal) : '● stable');
+
+  app.innerHTML = `
     <div class="topbar">
       <div class="brand">
-        ${BALL_ICON(34)}
+        ${BALL_ICON(30)}
         <div>
           <div class="brand-name">Set Point</div>
-          <div class="brand-sub">Semaine ${state.calendar.week} · Saison ${state.calendar.year} (${p.age} ans)</div>
+          <div class="brand-sub">Saison ${p.season} · ${p.age} ans</div>
         </div>
       </div>
       <div class="rank-box">
-        <div>
-          <div class="rank-lbl">Classement ATP</div>
-          <div class="rank-num">#${p.rank}</div>
-        </div>
-        ${deltaHtml}
+        <span class="rank-lbl">Classement</span>
+        <span class="rank-num mono">#${p.rank}</span>
+        <span class="rank-delta ${deltaClass} mono">${deltaText}</span>
       </div>
     </div>
 
     <div class="grid">
-      <div class="card">
-        <div class="player-name">${p.name}</div>
-        <div class="player-sub">${NATIONS.find(n=>n.id===p.nation)?.label || 'France'} · ${p.points} pts ATP</div>
-
-        <div class="stat">
-          <div class="stat-top"><span>Technique</span><b>${p.stats.technique}</b></div>
-          <div class="stat-bar"><span style="width:${p.stats.technique}%"></span></div>
-        </div>
-        <div class="stat">
-          <div class="stat-top"><span>Service</span><b>${p.stats.service}</b></div>
-          <div class="stat-bar"><span style="width:${p.stats.service}%"></span></div>
-        </div>
-        <div class="stat">
-          <div class="stat-top"><span>Physique</span><b>${p.stats.physique}</b></div>
-          <div class="stat-bar"><span style="width:${p.stats.physique}%"></span></div>
-        </div>
-        <div class="stat">
-          <div class="stat-top"><span>Mental</span><b>${p.stats.mental}</b></div>
-          <div class="stat-bar"><span style="width:${p.stats.mental}%"></span></div>
-        </div>
-
-        <div class="stat" style="margin-top:14px;">
-          <div class="stat-top"><span>Énergie</span><b>${p.energy}%</b></div>
-          <div class="stat-bar form"><span style="width:${p.energy}%"></span></div>
-        </div>
-        <div class="stat">
-          <div class="stat-top"><span>Morale</span><b>${p.morale}%</b></div>
-          <div class="stat-bar morale"><span style="width:${p.morale}%"></span></div>
-        </div>
-
-        <div class="money-line" style="margin-top:14px;">
-          <span>Gains cumulés</span>
-          <span class="v">${eur(p.money)}</span>
-        </div>
-
-        <div class="badge-row">
-          <span class="${p.titles.slam>0?'has':''}">Slams: ${p.titles.slam}</span>
-          <span class="${p.titles.masters>0?'has':''}">Masters: ${p.titles.masters}</span>
-          <span class="${p.titles.atp500>0?'has':''}">500: ${p.titles.atp500}</span>
-          <span class="${p.titles.atp250>0?'has':''}">250: ${p.titles.atp250}</span>
-          <span class="${p.titles.challenger>0?'has':''}">Challenger: ${p.titles.challenger}</span>
-        </div>
-      </div>
-
       <div>
         <div class="card">
-          <div class="eyebrow">Agenda de la semaine</div>
-          <div class="stage-h">Semaine ${state.calendar.week} / 48</div>
-          <div class="stage-p">Choisis ton activité pour progresser ou disputer un tournoi sur le circuit professionnel.</div>
-          
-          <div class="choices">
-            <button class="choice" onclick="startTourn('challenger')">
-              <span class="tag">Tournoi Challenger</span>
-              <b>Disputer un Challenger (Coût: 6% énergie)</b>
-              <span class="desc">Idéal pour progresser et engranger vos premiers points ATP.</span>
-            </button>
-            <button class="choice" onclick="startTourn('atp250')" ${p.rank>250?'style="opacity:0.6;"':''}>
-              <span class="tag">Tournoi ATP 250</span>
-              <b>Disputer un ATP 250 (Coût: 8% énergie)</b>
-              <span class="desc">${p.rank<=250?'Accessible à votre classement actuel.':'Requît un classement dans le Top 250.'}</span>
-            </button>
-            <button class="choice" onclick="startTourn('atp500')" ${p.rank>80?'style="opacity:0.6;"':''}>
-              <span class="tag">Tournoi ATP 500</span>
-              <b>Disputer un ATP 500 (Coût: 9% énergie)</b>
-              <span class="desc">${p.rank<=80?'Accessible à votre classement actuel.':'Requît un classement dans le Top 80.'}</span>
-            </button>
-            <button class="choice" onclick="startTourn('masters')" ${p.rank>30?'style="opacity:0.6;"':''}>
-              <span class="tag">Masters 1000</span>
-              <b>Disputer un Masters 1000 (Coût: 11% énergie)</b>
-              <span class="desc">${p.rank<=30?'Accessible à votre classement actuel.':'Requît un classement dans le Top 30.'}</span>
-            </button>
-            <button class="choice" onclick="doTraining()">
-              <span class="tag">Entraînement physique et technique</span>
-              <b>Séance d'entraînement rigoureuse</b>
-              <span class="desc">Améliore vos statistiques mais consomme un peu d'énergie.</span>
-            </button>
-            <button class="choice" onclick="doRest()">
-              <span class="tag">Récupération</span>
-              <b>Semaine de repos et soins</b>
-              <span class="desc">Regagnez de l'énergie et soignez vos petits pépins physiques.</span>
-            </button>
+          <div class="player-name">${p.name}</div>
+          <div class="player-sub">${NATIONS.find(n=>n.id===p.nation.id).label} · ${p.style.label}</div>
+
+          <div class="stat"><div class="stat-top"><span>Technique</span><b>${Math.round(p.stats.technique)}</b></div><div class="stat-bar"><span style="width:${p.stats.technique}%"></span></div></div>
+          <div class="stat"><div class="stat-top"><span>Service</span><b>${Math.round(p.stats.service)}</b></div><div class="stat-bar"><span style="width:${p.stats.service}%"></span></div></div>
+          <div class="stat"><div class="stat-top"><span>Physique</span><b>${Math.round(p.stats.physique)}</b></div><div class="stat-bar"><span style="width:${p.stats.physique}%"></span></div></div>
+          <div class="stat"><div class="stat-top"><span>Mental</span><b>${Math.round(p.stats.mental)}</b></div><div class="stat-bar"><span style="width:${p.stats.mental}%"></span></div></div>
+          <div class="stat"><div class="stat-top"><span>Forme</span><b>${Math.round(p.energy)}</b></div><div class="stat-bar form"><span style="width:${p.energy}%"></span></div></div>
+          <div class="stat"><div class="stat-top"><span>Moral</span><b>${Math.round(p.morale)}</b></div><div class="stat-bar morale"><span style="width:${p.morale}%"></span></div></div>
+
+          <div class="money-line"><span>Gains</span><span class="v">${eur(p.money)}</span></div>
+          <div class="money-line"><span>Sponsors</span><span class="v">${p.sponsors}</span></div>
+          <div class="money-line"><span>Meilleur classement</span><span class="v">#${p.bestRank}</span></div>
+
+          <div class="badge-row">
+            <span class="${p.titles.slam?'has':''}">Slam ×${p.titles.slam}</span>
+            <span class="${p.titles.masters?'has':''}">M1000 ×${p.titles.masters}</span>
+            <span class="${p.titles.atp500?'has':''}">ATP500 ×${p.titles.atp500}</span>
+            <span class="${p.titles.atp250?'has':''}">ATP250 ×${p.titles.atp250}</span>
+            <span class="${p.titles.challenger?'has':''}">Chall. ×${p.titles.challenger}</span>
           </div>
         </div>
 
         <div class="card">
-          <div class="eyebrow">Journal de bord</div>
-          <div class="journal">
-            ${p.history.map(h=>`<div class="journal-item"><b>[S${h.week} / ${h.year}]</b> ${h.text}</div>`).join('')}
-          </div>
+          <div class="eyebrow">Journal</div>
+          <div class="journal" id="journal"></div>
         </div>
       </div>
+
+      <div><div class="card" id="stage"></div></div>
     </div>
   `;
-}
 
-/* --- PROMPT UNIQUE DE GRAND CHELEM --- */
-function checkSlamTrigger(){
-  const w = state.calendar.week;
-  const slam = SLAMS.find(x => x.week === w);
-  if(!slam) return false;
-
-  // Condition de qualification : Top 64 mondial
-  if(state.player.rank <= 64){
-    state.calendar.currentSlamOffer = slam;
-    state.screen = 'slam_prompt';
-    return true;
-  }
-  return false;
-}
-
-function renderSlamPrompt(){
-  const slam = state.calendar.currentSlamOffer;
-  applyTheme('slam', slam.id);
-  return `
-    <div class="card" style="text-align:center; padding:50px 20px; border: 3px solid var(--gold); box-shadow: 0 8px 25px rgba(217, 164, 65, 0.3);">
-      <div style="font-size:54px; margin-bottom:16px;" class="ball-bounce">🎟️</div>
-      <div class="eyebrow" style="color:var(--gold); font-size:16px; letter-spacing: 0.1em;">Invitation Officielle</div>
-      <div class="stage-h" style="font-size:32px; color:var(--ink); margin: 15px 0;">
-        Félicitations, tu es éligible à ${slam.label} !
-      </div>
-      <div class="stage-p" style="max-width:550px; margin:0 auto 30px; font-size: 16px;">
-        Grâce à ton classement exceptionnel (<b>#${state.player.rank} mondial</b>), les portes du tableau principal de <b>${slam.label}</b> te sont grandes ouvertes.<br><br>
-        Le tournoi se joue sur <b>${slam.surface}</b> à ${slam.place}. C'est le moment de marquer l'histoire.
-      </div>
-      <div class="actions" style="justify-content:center; gap: 16px;">
-        <button class="btn" style="background:var(--gold); color:white; font-size:16px; padding: 14px 24px;" onclick="acceptSlamOffer()">Accepter et jouer le Grand Chelem</button>
-        <button class="btn outline" style="font-size:16px; padding: 14px 24px;" onclick="declineSlamOffer()">Ignorer ce tournoi</button>
-      </div>
-    </div>
-  `;
-}
-
-function acceptSlamOffer(){
-  const slam = state.calendar.currentSlamOffer;
-  state.calendar.currentSlamOffer = null;
-  startTourn('slam', slam.id);
-}
-
-function declineSlamOffer(){
-  const slam = state.calendar.currentSlamOffer;
-  state.calendar.currentSlamOffer = null;
-  log(state.player, `Vous avez décliné votre participation au ${slam.label}.`);
-  advanceWeek();
-}
-
-/* --- GESTION DES TOURNOIS --- */
-function startTourn(tierId, slamId = null){
-  const p = state.player;
-  const tConf = TIERS[tierId];
-
-  // Vérifications d'accès
-  if(tierId === 'atp250' && p.rank > 250){ log(p, 'Classement insuffisant pour l’ATP 250.'); render(); return; }
-  if(tierId === 'atp500' && p.rank > 80){ log(p, 'Classement insuffisant pour l’ATP 500.'); render(); return; }
-  if(tierId === 'masters' && p.rank > 30){ log(p, 'Classement insuffisant pour le Masters 1000.'); render(); return; }
-  if(tierId === 'slam' && p.rank > 64){ log(p, 'Classement insuffisant pour le Grand Chelem.'); render(); return; }
-
-  if(p.energy < tConf.energyCost){
-    log(p, 'Pas assez d’énergie pour disputer ce tournoi ! Reposez-vous.');
-    render();
-    return;
-  }
-
-  p.energy = clamp(p.energy - tConf.energyCost, 0, 100);
-
-  state.tournament = {
-    tier: tierId,
-    slamId: slamId,
-    roundIdx: 0,
-    opponent: null,
-    history: [],
-    stage: 'hub',
-    tactic: null
-  };
-
-  applyTheme(tierId, slamId);
-  state.screen = 'tournament';
-  generateOpponent();
-  render();
-}
-
-function generateOpponent(){
-  const t = state.tournament;
-  const tConf = TIERS[t.tier];
-  const oppRating = Math.max(15, Math.round(tConf.baseOpp + t.roundIdx * tConf.oppInc + (Math.random()*8 - 4)));
-  t.opponent = {
-    name: generateOpponentName(),
-    rating: oppRating
-  };
-}
-
-function generateOpponentName(){
-  const firsts = ['Lucas','Matteo','Carlos','Jannik','Alexander','Daniil','Stefanos','Andrey','Taylor','Casper','Alex','Ben','Ugo','Arthur','Felix','Sebastian','Holger','Karen','Frances','Tommy'];
-  const lasts = ['Alcaraz','Sinner','Djokovic','Medvedev','Zverev','Ruud','Tsitsipas','Rublev','Fritz','De Minaur','Humbert','Rinderknech','Fils','Cerundolo','Paul','Shelton','Musetti','Draper','Korda','Bublik'];
-  return choose(firsts) + ' ' + choose(lasts);
-}
-
-function renderTournament(){
-  const t = state.tournament;
-  const p = state.player;
-  const tConf = TIERS[t.tier];
-  const totalRounds = tConf.points.length;
-  const isFinalRound = (t.roundIdx === totalRounds - 1);
-  const isSemiRound = (t.roundIdx === totalRounds - 2);
-
-  const tName = tournamentLabel(t.tier, t.slamId);
-  const tSurf = tournamentSurface(t.tier, t.slamId);
-
-  let content = '';
-
-  if(t.stage === 'hub'){
-    content = `
-      <div class="tourn-banner" style="background:var(--net); margin-bottom:16px;">
-        <div class="tourn-banner-name">${tName}</div>
-        <div class="tourn-banner-sub">${tSurf} · Tour ${t.roundIdx + 1} / ${totalRounds}</div>
-      </div>
-      <div class="stage-h">Prochain adversaire : ${t.opponent.name}</div>
-      <div class="stage-p">
-        Niveau estimé de l’adversaire : <b>${t.opponent.rating} / 100</b>.<br>
-        Préparez votre tactique pour remporter ce match crucial.
-      </div>
-      <div class="actions">
-        <button class="btn" onclick="playMatch()">Jouer le match</button>
-        <button class="btn danger" onclick="withdrawTourn()">Déclarer forfait</button>
-      </div>
-    `;
-  } else if(t.stage === 'match_choices'){
-    let tacticsList = SF_TACTICS;
-    let stageTitle = 'Demi-finale intense';
-    let stageDesc = 'Le dernier carré ! Choisissez votre approche tactique pour faire basculer ce match décisif :';
-
-    if(isFinalRound){
-      tacticsList = FIN_TACTICS;
-      stageTitle = 'Finale du tournoi !';
-      stageDesc = 'Le trophée est à portée de main. Choisissez votre plan de jeu final :';
-    } else if(!isSemiRound){
-      // Tour standard, résolution automatique ou transition rapide
-      playMatchResolution(null);
-      return '';
-    }
-
-    content = `
-      <div class="tourn-banner" style="background:var(--net); margin-bottom:16px;">
-        <div class="tourn-banner-name">${tName} — ${stageTitle}</div>
-        <div class="tourn-banner-sub">Adversaire : ${t.opponent.name}</div>
-      </div>
-      <div class="stage-h">${stageTitle}</div>
-      <div class="stage-p">${stageDesc}</div>
-      <div class="choices">
-        ${tacticsList.map(tac=>`
-          <button class="choice" onclick="playMatchResolution('${tac.id}')">
-            <span class="tag">${tac.tag}</span>
-            <b>${tac.label}</b>
-            <span class="desc">${tac.desc}</span>
-          </button>
-        `).join('')}
-      </div>
-    `;
-  } else if(t.stage === 'result'){
-    let resultsHtml = t.history.map(h=>`<div class="result ${h.won&&h.isFinal?'title':''}"><span>${h.text}</span><b>${h.won?'Victoire':'Défaite'}</b></div>`).join('');
-    content = `
-      <div class="tourn-banner" style="background:var(--net); margin-bottom:16px;">
-        <div class="tourn-banner-name">${tName}</div>
-        <div class="tourn-banner-sub">Bilan du tournoi</div>
-      </div>
-      <div class="stage-h">Résultats du tournoi</div>
-      <div class="results">${resultsHtml}</div>
-      <button class="btn" onclick="finishTournament()">Continuer</button>
-    `;
-  }
-
-  return `<div class="card">${content}</div>`;
-}
-
-function playMatch(){
-  const t = state.tournament;
-  const tConf = TIERS[t.tier];
-  const totalRounds = tConf.points.length;
-  const isSemiRound = (t.roundIdx === totalRounds - 2);
-  const isFinalRound = (t.roundIdx === totalRounds - 1);
-
-  if(isSemiRound || isFinalRound){
-    t.stage = 'match_choices';
-    render();
-  } else {
-    playMatchResolution(null);
-  }
-}
-
-function playMatchResolution(tacticId){
-  const p = state.player;
-  const t = state.tournament;
-  const tConf = TIERS[t.tier];
-
-  let probMod = 0;
-  let energyCost = 3;
-
-  if(tacticId){
-    const allTac = [...SF_TACTICS, ...FIN_TACTICS];
-    const found = allTac.find(x=>x.id===tacticId);
-    if(found){
-      probMod = found.probMod;
-      energyCost = Math.max(1, 3 + (found.energyMod || 0));
-    }
-  }
-
-  p.energy = clamp(p.energy - energyCost, 0, 100);
-
-  // Calcul de performance du joueur
-  const playerPower = (p.stats.technique * 0.3) + (p.stats.service * 0.25) + (p.stats.physique * 0.25) + (p.stats.mental * 0.2) + (p.morale * 0.1) + (Math.random() * 20 - 10) + (probMod * 100);
-  const oppPower = t.opponent.rating + (Math.random() * 25 - 12);
-
-  const won = playerPower >= oppPower;
-  const isFinal = (t.roundIdx === tConf.points.length - 1);
-
-  t.history.push({
-    round: t.roundIdx + 1,
-    opponent: t.opponent.name,
-    won,
-    isFinal,
-    text: `Tour ${t.roundIdx + 1} vs ${t.opponent.name}`
+  const journal = document.getElementById('journal');
+  p.journal.slice(-40).forEach(entry=>{
+    const d = document.createElement('div');
+    d.className = 'journal-item';
+    d.innerHTML = `<b>S${entry.season} · ${entry.age} ans —</b> ${entry.text}`;
+    journal.appendChild(d);
   });
-
-  if(won){
-    if(isFinal){
-      // Victoire finale du tournoi !
-      const pts = tConf.points[t.roundIdx];
-      const prz = tConf.prize[t.roundIdx];
-      p.points += pts;
-      p.money += prz;
-      p.rep = clamp(p.rep + 8, 0, 100);
-
-      if(t.tier === 'slam'){
-        p.titles.slam++;
-        log(p, `🏆 Victoire historique au ${tournamentLabel(t.tier, t.slamId)} ! (+${pts} pts, +${eur(prz)})`);
-      } else if(t.tier === 'masters'){
-        p.titles.masters++;
-        log(p, `🏆 Victoire au Masters 1000 ! (+${pts} pts, +${eur(prz)})`);
-      } else if(t.tier === 'atp500'){
-        p.titles.atp500++;
-        log(p, `🥇 Titre ATP 500 remporté ! (+${pts} pts, +${eur(prz)})`);
-      } else if(t.tier === 'atp250'){
-        p.titles.atp250++;
-        log(p, `🥇 Titre ATP 250 remporté ! (+${pts} pts, +${eur(prz)})`);
-      } else {
-        p.titles.challenger++;
-        log(p, `🥇 Titre Challenger remporté ! (+${pts} pts, +${eur(prz)})`);
-      }
-
-      t.stage = 'result';
-      render();
-    } else {
-      // Victoire de tour standard / intermédiaire
-      t.roundIdx++;
-      generateOpponent();
-      t.stage = 'hub';
-      render();
-    }
-  } else {
-    // Défaite
-    const achievedRound = t.roundIdx;
-    const pts = achievedRound > 0 ? tConf.points[achievedRound - 1] : Math.round(tConf.points[0]/2);
-    const prz = achievedRound > 0 ? tConf.prize[achievedRound - 1] : Math.round(tConf.prize[0]/2);
-    p.points += pts;
-    p.money += prz;
-
-    log(p, `Élimination au ${tournamentLabel(t.tier, t.slamId)} au tour ${achievedRound + 1} par ${t.opponent.name}. (+${pts} pts)`);
-    t.stage = 'result';
-    render();
-  }
+  renderStage();
 }
 
-function withdrawTourn(){
-  const p = state.player;
-  log(p, 'Forfait déclaré pendant le tournoi.');
-  finishTournament();
-}
+function renderStage(){
+  const p = player;
+  const stage = document.getElementById('stage');
 
-function finishTournament(){
-  updateRanking();
-  advanceWeek();
-}
-
-/* --- ENTRAÎNEMENT ET REPOS --- */
-function doTraining(){
-  const p = state.player;
-  if(p.energy < 12){
-    log(p, 'Trop fatigué pour vous entraîner. Reposez-vous !');
-    render();
-    return;
-  }
-  p.energy = clamp(p.energy - 12, 0, 100);
-  
-  // Amélioration aléatoire d'une stat
-  const statsList = ['technique','service','physique','mental'];
-  const chosenStat = choose(statsList);
-  p.stats[chosenStat] = clamp(p.stats[chosenStat] + rand(1, 3), 20, 99);
-  
-  log(p, `Séance d'entraînement réussie : +${chosenStat.toUpperCase()} amélioré.`);
-  updateRanking();
-  advanceWeek();
-}
-
-function doRest(){
-  const p = state.player;
-  p.energy = clamp(p.energy + 25, 0, 100);
-  p.morale = clamp(p.morale + 5, 0, 100);
-  log(p, 'Semaine de repos et récupération bénéfique.');
-  updateRanking();
-  advanceWeek();
-}
-
-function updateRanking(){
-  const p = state.player;
-  p.prevRank = p.rank;
-  p.rank = pointsToRank(p.points);
-}
-
-/* --- PROGRESSION DU CALENDRIER --- */
-function advanceWeek(){
-  const p = state.player;
-  state.calendar.week++;
-
-  // Événement aléatoire ou fun occasionnel
-  if(Math.random() < 0.35 && state.calendar.week % 2 === 0){
-    triggerRandomEvent();
-    return;
-  }
-
-  // Fin d'année civile (48 semaines)
-  if(state.calendar.week > 48){
-    state.calendar.week = 1;
-    state.calendar.year++;
-    p.age++;
-    log(p, `Bon anniversaire ! Vous avez désormais ${p.age} ans.`);
-
-    if(p.age >= 36 || p.money <= -10000){
-      state.screen = 'end';
-      render();
-      return;
-    }
-  }
-
-  // Vérifier si un Grand Chelem se déclenche cette semaine
-  if(checkSlamTrigger()){
-    render();
-    return;
-  }
-
-  state.screen = 'hub';
-  render();
-}
-
-/* --- ÉVÉNEMENTS ALÉATOIRES --- */
-let activeEvent = null;
-
-function triggerRandomEvent(){
-  activeEvent = choose(FUNNY_EVENTS);
-  state.screen = 'event';
-  render();
-}
-
-function renderEvent(){
-  const ev = activeEvent;
-  if(!ev){ state.screen = 'hub'; render(); return; }
-
-  return `
-    <div class="card">
-      <div class="eyebrow">Événement imprévu</div>
+  if(p.phase === 'event'){
+    stage.style.background = '';
+    const ev = pendingEvent || (pendingEvent = pickEvent(p));
+    stage.innerHTML = `
+      <div class="eyebrow">Saison ${p.season}</div>
       <div class="stage-h">${ev.title}</div>
       <div class="stage-p">${ev.text}</div>
-      <div class="choices">
-        ${ev.choices.map((c, idx)=>`
-          <button class="choice" onclick="resolveEventChoice(${idx})">
-            <span class="tag">${c.tag}</span>
-            <b>${c.label}</b>
-            <span class="desc">${c.desc}</span>
-          </button>
-        `).join('')}
+      <div class="choices" id="choicesWrap"></div>
+    `;
+    const wrap = document.getElementById('choicesWrap');
+    ev.choices.forEach(c=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.innerHTML = `<span class="tag">${c.tag}</span>${c.label}<span class="desc">${c.desc}</span>`;
+      btn.onclick = ()=>{
+        const before = snapshotStats(p);
+        c.effect(p);
+        const after = snapshotStats(p);
+        p.lastDecisionGain = { title: ev.title, choiceLabel: c.label, before, after };
+        pendingEvent = null;
+        p.phase = 'decision_result';
+        render();
+      };
+      wrap.appendChild(btn);
+    });
+
+  } else if(p.phase === 'decision_result'){
+    stage.style.background = '';
+    const g = p.lastDecisionGain;
+    const labels = { technique:'Technique', service:'Service', physique:'Physique', mental:'Mental', morale:'Moral', energy:'Forme', rep:'Réputation', money:'Argent' };
+    const rows = Object.keys(labels).map(k=>{
+      const d = g.after[k] - g.before[k];
+      if(Math.abs(d) < 0.01) return '';
+      const cls = d>0 ? 'good' : 'bad';
+      const val = k==='money'
+        ? (d>0?'+':'') + eur(Math.round(d))
+        : (d>0?'+':'') + (Number.isInteger(d) ? d : d.toFixed(1));
+      return `<div class="recap-row"><span class="l">${labels[k]}</span><span class="r ${cls}">${val}</span></div>`;
+    }).join('');
+    stage.innerHTML = `
+      <div class="eyebrow">Conséquences</div>
+      <div class="stage-h">${g.choiceLabel}</div>
+      <div class="stage-p">${g.title}</div>
+      ${rows || '<div class="stage-p">Aucun changement mesurable.</div>'}
+      <div class="actions"><button class="btn" id="contDecisionBtn">Continuer</button></div>
+    `;
+    document.getElementById('contDecisionBtn').onclick = ()=>{ calendarChoice = null; p.phase = 'calendar'; render(); };
+
+  } else if(p.phase === 'calendar'){
+    stage.style.background = '';
+    if(p.skipSeason){
+      startSeason(p, {intensity:'standard', slams:{}, masters:0});
+      return;
+    }
+    renderCalendarPhase();
+
+  } else if(p.phase === 'match_choice'){
+    const run = p.seasonRun; const cur = run.current;
+    const colors = tournamentColors(cur.tier, cur.slamId);
+    stage.style.background = colors.light;
+    const stageLabel = (cur.roundIndex === cur.totalRounds-1) ? 'Finale' : 'Demi-finale';
+    stage.innerHTML = `
+      <div class="tourn-banner" style="background:${colors.primary};">
+        <div class="tourn-banner-name">${tournamentLabel(cur.tier, cur.slamId)}</div>
+        <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId)}</div>
+      </div>
+      <div class="eyebrow" style="margin-top:14px;">${stageLabel}</div>
+      <div class="stage-h">Quelle tactique adopter ?</div>
+      <div class="stage-p">Forme : ${Math.round(p.energy)} · Mental : ${Math.round(p.stats.mental)}</div>
+      <div class="choices" id="tacticWrap"></div>
+    `;
+    const wrap = document.getElementById('tacticWrap');
+    MATCH_TACTICS.forEach(t=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.style.borderLeft = `3px solid ${colors.primary}`;
+      btn.innerHTML = `<span class="tag" style="color:${colors.primary}">${t.tag}</span>${t.label}<span class="desc">${t.desc}</span>`;
+      btn.onclick = ()=>{ resolveTactic(p, t.id); };
+      wrap.appendChild(btn);
+    });
+
+  } else if(p.phase === 'tournament_result'){
+    const r = p.lastTournamentResult;
+    const colors = tournamentColors(r.tier, r.slamId);
+    stage.style.background = colors.light;
+    const rl = roundLabel(r.roundsWon, r.totalRounds);
+    stage.innerHTML = `
+      <div class="tourn-banner" style="background:${colors.primary};">
+        <div class="tourn-banner-name">${tournamentLabel(r.tier, r.slamId)}</div>
+        <div class="tourn-banner-sub">${tournamentSurface(r.tier, r.slamId)}</div>
+      </div>
+      <div class="eyebrow" style="margin-top:14px;">Résultat</div>
+      <div class="stage-h">${rl}</div>
+      <div class="recap-row"><span class="l">Points</span><span class="r good">+${r.points}</span></div>
+      <div class="recap-row"><span class="l">Gains</span><span class="r gold">${eur(r.prize)}</span></div>
+      ${r.injured ? '<div class="recap-row"><span class="l">Incident</span><span class="r bad">Blessure en fin de tournoi</span></div>' : ''}
+      <div class="actions"><button class="btn" id="contTournBtn">Continuer</button></div>
+    `;
+    document.getElementById('contTournBtn').onclick = ()=>{ advanceSeason(p); };
+
+  } else if(p.phase === 'recap'){
+    stage.style.background = '';
+    const r = p.lastRecap;
+    let resultsHtml = '';
+    if(r.results.length){
+      resultsHtml = '<div class="results">' + r.results.map(res=>{
+        const rl = roundLabel(res.roundsWon, res.totalRounds);
+        const colors = tournamentColors(res.tier, res.slamId);
+        return `<div class="result ${res.champion?'title':''}" style="border-left-color:${colors.primary}"><span>${tournamentLabel(res.tier, res.slamId)}</span><span>${rl}</span></div>`;
+      }).join('') + '</div>';
+    }
+    stage.innerHTML = `
+      <div class="eyebrow">Saison ${p.season} · Bilan</div>
+      <div class="stage-h">${r.intensity}</div>
+      ${resultsHtml || '<div class="stage-p">Saison écourtée, sans résultats.</div>'}
+      <div class="recap-row"><span class="l">Tournois disputés</span><span class="r">${r.played}</span></div>
+      <div class="recap-row"><span class="l">Points gagnés</span><span class="r good">+${r.seasonPoints}</span></div>
+      <div class="recap-row"><span class="l">Gains de la saison</span><span class="r gold">${eur(r.seasonPrize)}</span></div>
+      <div class="recap-row"><span class="l">Classement</span><span class="r">#${r.rankBefore} → #${r.rankAfter}</span></div>
+      ${r.stopped ? '<div class="recap-row"><span class="l">Incident</span><span class="r bad">Saison interrompue</span></div>' : ''}
+      <div class="actions"><button class="btn" id="nextSeasonBtn">Saison suivante</button></div>
+    `;
+    document.getElementById('nextSeasonBtn').onclick = ()=>{
+      p.season++; p.age++;
+      p.phase = 'event';
+      render();
+    };
+  }
+}
+
+function renderCalendarPhase(){
+  const p = player;
+  if(!calendarChoice) calendarChoice = { intensity:'standard', slams:{}, masters:0 };
+  const stage = document.getElementById('stage');
+  stage.innerHTML = `
+    <div class="eyebrow">Saison ${p.season}</div>
+    <div class="stage-h">Composez votre saison</div>
+    <div class="stage-p">Classement actuel : #${p.rank}. Choisissez le rythme des petits tournois, puis ajoutez les grands rendez-vous que vous voulez disputer — chacun rallonge la saison.</div>
+    <div class="eyebrow" style="margin-top:6px;">Calendrier de base</div>
+    <div class="choices" id="calWrap"></div>
+    <div class="eyebrow" style="margin-top:18px;">Grands tournois</div>
+    <div class="opt-grid" id="bigWrap"></div>
+    ${p.age>=30 ? '<div style="margin-top:16px;"><button class="btn danger" id="retireBtn">Annoncer votre retraite</button></div>' : ''}
+    <div class="actions"><button class="btn" id="launchSeasonBtn">Lancer la saison</button></div>
+  `;
+
+  const calWrap = document.getElementById('calWrap');
+  CALENDAR_OPTIONS.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice' + (calendarChoice.intensity===c.id ? ' sel' : '');
+    btn.innerHTML = `<span class="tag">${c.tag}</span>${c.label}<span class="desc">${c.desc}</span>`;
+    btn.onclick = ()=>{ calendarChoice.intensity = c.id; renderCalendarPhase(); };
+    calWrap.appendChild(btn);
+  });
+
+  const bigWrap = document.getElementById('bigWrap');
+  SLAMS.forEach(s=>{
+    const sel = !!calendarChoice.slams[s.id];
+    const d = document.createElement('div');
+    d.className = 'opt' + (sel ? ' sel' : '');
+    d.style.borderLeft = `4px solid ${s.colors.primary}`;
+    d.innerHTML = `<div class="h">${s.label}</div><div class="d">${s.surface} · ${s.place}</div>`;
+    d.onclick = ()=>{ calendarChoice.slams[s.id] = !calendarChoice.slams[s.id]; renderCalendarPhase(); };
+    bigWrap.appendChild(d);
+  });
+
+  const mCard = document.createElement('div');
+  mCard.className = 'opt';
+  mCard.style.borderLeft = `4px solid ${TIER_COLORS.masters.primary}`;
+  mCard.innerHTML = `<div class="h">Masters 1000</div><div class="d">${calendarChoice.masters} sélectionné(s) sur 4</div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn outline" id="mastersMinus" style="padding:6px 12px;">−</button>
+      <button class="btn outline" id="mastersPlus" style="padding:6px 12px;">+</button>
+    </div>`;
+  bigWrap.appendChild(mCard);
+  document.getElementById('mastersMinus').onclick = ()=>{ calendarChoice.masters = Math.max(0, calendarChoice.masters-1); renderCalendarPhase(); };
+  document.getElementById('mastersPlus').onclick = ()=>{ calendarChoice.masters = Math.min(4, calendarChoice.masters+1); renderCalendarPhase(); };
+
+  const retireBtn = document.getElementById('retireBtn');
+  if(retireBtn){ retireBtn.onclick = ()=>{ p.retired = true; render(); }; }
+
+  document.getElementById('launchSeasonBtn').onclick = ()=>{
+    const choice = calendarChoice;
+    calendarChoice = null;
+    startSeason(p, choice);
+  };
+}
+
+function renderEnd(){
+  const p = player;
+  const score = legendScore(p);
+  const rating = legendRating(score);
+  const badges = computeBadges(p);
+  const totalTitles = Object.values(p.titles).reduce((a,b)=>a+b,0);
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="brand">
+        ${BALL_ICON(30)}
+        <div>
+          <div class="brand-name">Set Point</div>
+          <div class="brand-sub">${p.forcedRetire ? 'Fin de carrière forcée' : 'Retraite annoncée'} · ${p.seasonsPlayed} saisons</div>
+        </div>
+      </div>
+      <div class="rank-box">
+        <span class="rank-lbl">Meilleur classement</span>
+        <span class="rank-num mono">#${p.bestRank}</span>
       </div>
     </div>
-  `;
-}
 
-function resolveEventChoice(idx){
-  const ev = activeEvent;
-  if(ev && ev.choices[idx]){
-    ev.choices[idx].effect(state.player);
-  }
-  activeEvent = null;
-  updateRanking();
-  state.screen = 'hub';
-  render();
-}
-
-/* --- ÉCRAN FINAL (BILAN) CORRIGÉ --- */
-function renderEnd(){
-  applyTheme('challenger', null);
-  const p = state.player;
-  const totalTitles = p.titles.slam + p.titles.masters + p.titles.atp500 + p.titles.atp250 + p.titles.challenger;
-  
-  let goatScore = (p.titles.slam * 50) + (p.titles.masters * 20) + (p.titles.atp500 * 8) + (totalTitles * 3);
-  let ratingLetter = 'B';
-  let flavor = 'Une solide carrière sur le circuit professionnel.';
-  if(goatScore > 400){ ratingLetter = 'GOAT'; flavor = 'Une légende incontestée de l’histoire du tennis mondial !'; }
-  else if(goatScore > 250){ ratingLetter = 'A+'; flavor = 'Un champion d’exception aux palmarès immense.'; }
-  else if(goatScore > 100){ ratingLetter = 'A'; flavor = 'Un joueur redouté et respecté de tous.'; }
-
-  return `
     <div class="card">
       <div class="rating">
-        <div class="letter">${ratingLetter}</div>
-        <div class="flavor">${flavor}</div>
-        <div class="score">Score de légende : ${goatScore} pts</div>
+        <div class="letter">${rating.letter}</div>
+        <div class="flavor">${rating.flavor}</div>
+        <div class="score">Score : ${score}</div>
       </div>
 
-      <div class="stage-h" style="text-align:center; margin-bottom:16px;">Bilan de fin de carrière</div>
-
-      <div class="recap-row"><span class="l">Joueur</span><span class="r">${p.name}</span></div>
-      <div class="recap-row"><span class="l">Âge de retraite</span><span class="r">${p.age} ans</span></div>
+      <div class="stage-h">${p.name} — bilan</div>
       <div class="recap-row"><span class="l">Titres du Grand Chelem</span><span class="r gold">${p.titles.slam}</span></div>
       <div class="recap-row"><span class="l">Titres Masters 1000</span><span class="r">${p.titles.masters}</span></div>
       <div class="recap-row"><span class="l">Titres ATP 500</span><span class="r">${p.titles.atp500}</span></div>
@@ -1177,17 +1256,19 @@ function renderEnd(){
       <div class="recap-row"><span class="l">Titres Challenger</span><span class="r">${p.titles.challenger}</span></div>
       <div class="recap-row"><span class="l">Total de titres</span><span class="r good">${totalTitles}</span></div>
       <div class="recap-row"><span class="l">Gains cumulés</span><span class="r gold">${eur(p.money)}</span></div>
-      <div class="recap-row"><span class="l">Meilleur classement</span><span class="r">Top ${p.rank}</span></div>
+      <div class="recap-row"><span class="l">Blessures</span><span class="r ${p.injuries.length?'bad':''}">${p.injuries.length}</span></div>
+      <div class="recap-row"><span class="l">Retraite à</span><span class="r">${p.age} ans</span></div>
 
-      <div class="actions" style="justify-content:center; margin-top:24px;">
-        <button class="btn" onclick="location.reload()">Recommencer une carrière</button>
-      </div>
+      <div class="eyebrow" style="margin-top:20px;">Badges</div>
+      <div class="badges">${badges.map(b=>`<div class="badge"><div class="h">${b.h}</div><div class="d">${b.d}</div></div>`).join('')}</div>
+
+      <div class="actions"><button class="btn" onclick="player=null; render()">Rejouer une carrière</button></div>
     </div>
   `;
 }
 
-// Initialisation au chargement de la page
 render();
+
 </script>
 </body>
 </html>
