@@ -233,6 +233,11 @@ img,svg,canvas{max-width:100%}
 .gain{padding:5px 8px;border-radius:999px;font-size:11px;font-weight:700}
 .gain.up{background:#e5f4e8;color:#17652b}.gain.down{background:#fae7e7;color:#8d2525}.gain.neutral{background:#edf0ed;color:#536057}
 
+
+.choice.sel{border-color:var(--ball-dark); background:#F4FADF;}
+.tourn-banner{padding:14px 16px;border-radius:12px;color:#fff;}
+.tourn-banner-name{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;}
+.tourn-banner-sub{font-size:12px;opacity:.85;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -249,18 +254,6 @@ const BALL_ICON = (size=28) => `<svg class="icon-ball" width="${size}" height="$
 <circle cx="20" cy="20" r="18" fill="#CFEA3E" stroke="#132A1D" stroke-width="1.5"/>
 <path d="M4 12C10 18 10 22 4 28" stroke="#132A1D" stroke-width="1.5" fill="none"/>
 <path d="M36 12C30 18 30 22 36 28" stroke="#132A1D" stroke-width="1.5" fill="none"/>
-</svg>`;
-
-const RACKET_ICON = (size=64) => `<svg width="${size}" height="${size}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-<ellipse cx="27" cy="22" rx="17" ry="20" fill="none" stroke="#153452" stroke-width="3"/>
-<line x1="14" y1="10" x2="40" y2="34" stroke="#DDE7D9" stroke-width="1"/>
-<line x1="18" y1="6" x2="36" y2="38" stroke="#DDE7D9" stroke-width="1"/>
-<line x1="22" y1="3" x2="32" y2="41" stroke="#DDE7D9" stroke-width="1"/>
-<line x1="12" y1="14" x2="42" y2="30" stroke="#DDE7D9" stroke-width="1"/>
-<line x1="12" y1="20" x2="42" y2="24" stroke="#DDE7D9" stroke-width="1"/>
-<line x1="12" y1="26" x2="41" y2="18" stroke="#DDE7D9" stroke-width="1"/>
-<line x1="15" y1="32" x2="38" y2="12" stroke="#DDE7D9" stroke-width="1"/>
-<rect x="36" y="36" width="8" height="24" rx="3" transform="rotate(35 36 36)" fill="#153452"/>
 </svg>`;
 
 /* ============ DONNÉES ============ */
@@ -294,9 +287,46 @@ const TIERS = {
   challenger:{ label:'Challenger', baseOpp:27, oppInc:4, points:[5,12,25,45,80], prize:[400,900,2000,4200,9000], energyCost:6 },
   atp250:{ label:'ATP 250', baseOpp:39, oppInc:4, points:[8,16,30,55,105,170], prize:[3000,6000,12000,25000,55000,120000], energyCost:8 },
   atp500:{ label:'ATP 500', baseOpp:49, oppInc:4, points:[8,16,35,70,140,250], prize:[6000,12000,25000,50000,110000,250000], energyCost:9 },
-  masters:{ label:'Masters 1000', baseOpp:59, oppInc:4, points:[10,20,45,90,180,360,600], prize:[15000,30000,60000,120000,250000,500000,1100000], energyCost:11 },
-  slam:{ label:'Grand Chelem', baseOpp:67, oppInc:4, points:[10,45,90,180,360,720,1200,2000], prize:[60000,120000,220000,400000,700000,1300000,2400000,3000000], energyCost:13 }
+  masters:{ label:'Masters 1000', baseOpp:59, oppInc:4, points:[10,20,45,90,180,360], prize:[15000,30000,60000,120000,250000,500000], energyCost:11 },
+  slam:{ label:'Grand Chelem', baseOpp:67, oppInc:4, points:[10,45,90,180,360,720,1200], prize:[60000,120000,220000,400000,700000,1300000,2400000], energyCost:13 }
 };
+
+/* Identité et couleurs des 4 levées du Grand Chelem, par surface */
+const SLAMS = [
+  { id:'ao', label:'Open d\'Australie', surface:'Dur', place:'Melbourne', colors:{ primary:'#1B4B8C', light:'#EAF2FB', accent:'#4F8FDB' } },
+  { id:'rg', label:'Roland-Garros', surface:'Terre battue', place:'Paris', colors:{ primary:'#C1592A', light:'#FBEEE3', accent:'#E0895A' } },
+  { id:'wim', label:'Wimbledon', surface:'Gazon', place:'Londres', colors:{ primary:'#1B5E3A', light:'#E7F3EB', accent:'#4C9268' } },
+  { id:'uso', label:'US Open', surface:'Dur', place:'New York', colors:{ primary:'#25348C', light:'#EAEBFB', accent:'#5566C7' } },
+];
+
+/* Couleurs par défaut pour les autres catégories de tournois */
+const TIER_COLORS = {
+  challenger:{ primary:'#647B6C', light:'#EEF3EA', accent:'#8AA48F' },
+  atp250:{ primary:'#3D6A8C', light:'#E7F0F6', accent:'#5B95BE' },
+  atp500:{ primary:'#2C5B75', light:'#E3EFF3', accent:'#4B879F' },
+  masters:{ primary:'#5B3E8C', light:'#EFE7F6', accent:'#8B67B8' },
+};
+
+function tournamentColors(tierId, slamId){
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.colors; }
+  return TIER_COLORS[tierId] || TIER_COLORS.challenger;
+}
+function tournamentLabel(tierId, slamId){
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.label; }
+  return TIERS[tierId].label;
+}
+function tournamentSurface(tierId, slamId){
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.surface + ' · ' + s.place; }
+  if(tierId==='masters') return 'Grand rendez-vous du circuit';
+  return 'Circuit international';
+}
+
+/* Tactiques disponibles en demi-finale et en finale */
+const MATCH_TACTICS = [
+  { id:'prudent', label:'Jouer serré', tag:'Prudence', desc:'Moins de prises de risques, vous économisez des forces.', probMod:-0.06, energyCostMod:-3, injuryMod:-1 },
+  { id:'normal', label:'Garder votre plan de jeu', tag:'Équilibre', desc:'Vous restez fidèle à vos habitudes.', probMod:0, energyCostMod:0, injuryMod:0 },
+  { id:'agressif', label:'Tout risquer', tag:'Audace', desc:'Plus de chances si ça passe, mais fatigue et risques accrus.', probMod:0.09, energyCostMod:5, injuryMod:2 },
+];
 
 const RANK_BANDS = [
   [9200, 1], [7500, 5], [6000, 12], [4600, 22], [3400, 40],
@@ -306,19 +336,6 @@ const RANK_BANDS = [
 
 function snapshotStats(p){
   return {technique:p.stats.technique,service:p.stats.service,physique:p.stats.physique,mental:p.stats.mental,morale:p.morale,energy:p.energy,rep:p.rep,money:p.money};
-}
-function showDecisionGain(before,p){
-  const labels={technique:'Développement',service:'Service',physique:'Physique',mental:'Mental',morale:'Moral',energy:'Énergie',rep:'Réputation',money:'Argent'};
-  const after=snapshotStats(p), gains=[];
-  Object.keys(labels).forEach(k=>{
-    const d=after[k]-before[k];
-    if(Math.abs(d)>0.01) gains.push(`<span class="gain ${d>0?'up':'down'}">${labels[k]} ${d>0?'+':''}${Number.isInteger(d)?d:d.toFixed(1)}</span>`);
-  });
-  const box=document.createElement('div');
-  box.className='decision-gain';
-  box.innerHTML=`<b>Développement</b><div class="gain-list">${gains.length?gains.join(''):'<span class="gain neutral">Aucune statistique modifiée</span>'}</div>`;
-  const stage=document.getElementById('stage');
-  if(stage) stage.prepend(box);
 }
 
 function pointsToRank(points){
@@ -334,8 +351,6 @@ function pointsToRank(points){
   }
   return 1400;
 }
-
-/* Textes courts et simples pour chaque événement */
 
 const FUNNY_EVENTS = [
   {id:'funny_cat',min:16,max:24,title:'Un chat envahit le court',text:'Un chat s’installe sur la ligne de fond. Il refuse catégoriquement de bouger.',choices:[
@@ -540,9 +555,9 @@ const EVENTS = [
 ];
 
 const CALENDAR_OPTIONS = [
-  { id:'leger', tag:'Léger', label:'Calendrier léger', desc:'Peu de tournois, corps préservé, progression lente.' },
+  { id:'leger', tag:'Léger', label:'Calendrier léger', desc:'Peu de petits tournois, corps préservé.' },
   { id:'standard', tag:'Standard', label:'Calendrier standard', desc:'Un rythme classique, équilibré.' },
-  { id:'intensif', tag:'Intensif', label:'Calendrier intensif', desc:'Beaucoup de tournois, plus de risques.' },
+  { id:'intensif', tag:'Intensif', label:'Calendrier intensif', desc:'Beaucoup de petits tournois, plus de risques.' },
 ];
 
 /* ============ ÉTAT ============ */
@@ -551,6 +566,7 @@ let usedEvents = [];
 let usedFunnyEvents = [];
 let usedSeriousEvents = [];
 let pendingEvent = null;
+let calendarChoice = null;
 
 function log(p, text){ p.journal.push({season:p.season, age:p.age, text}); }
 function injure(p, zone){
@@ -576,65 +592,41 @@ function newPlayer(){
     points:650, rank:250, prevRank:250,
     titles:{ challenger:0, atp250:0, atp500:0, masters:0, slam:0 },
     bestRank:1400, sponsors:0, injuries:[], seasonsPlayed:0,
-    journal:[], phase:'event', retired:false, forcedRetire:false, skipSeason:false, lastRecap:null,
+    journal:[], phase:'event', retired:false, forcedRetire:false, skipSeason:false,
+    lastRecap:null, lastDecisionGain:null, lastTournamentResult:null, seasonRun:null,
   };
 }
 
-/* ============ SIMULATION ============ */
-/* BUG CORRIGÉ : la fonction utilisait une variable globale "p" qui
-   n'existait jamais, ce qui faisait planter le calcul du calendrier
-   dès la fin de la création du joueur. On passe maintenant l'âge en
-   paramètre explicite. */
+/* ============ CALENDRIER DE BASE (petits tournois) ============ */
 function planSeason(rank, intensityId, age){
   const mult = intensityId==='leger' ? 0.55 : intensityId==='intensif' ? 1.6 : 1;
   const fill = (tier,n) => Array(Math.max(0, Math.round(n*mult))).fill(tier);
   let plan = [];
   if(age>=21){
-    if(rank>800) plan=[...fill('challenger',2),...fill('atp250',3),...fill('slam',1)];
-    else if(rank>500) plan=[...fill('challenger',1),...fill('atp250',3),...fill('atp500',2),...fill('slam',1)];
-    else if(rank>250) plan=[...fill('atp250',2),...fill('atp500',3),...fill('masters',1),...fill('slam',2)];
-    else if(rank>100) plan=[...fill('atp500',3),...fill('masters',2),...fill('slam',3)];
-    else plan=[...fill('masters',3),...fill('slam',5)];
-  }else if(age>=19){
-    if(rank>900) plan=[...fill('challenger',2),...fill('atp250',4),...fill('slam',1)];
+    if(rank>800) plan=[...fill('challenger',3),...fill('atp250',3)];
     else if(rank>500) plan=[...fill('challenger',1),...fill('atp250',4),...fill('atp500',2)];
-    else plan=[...fill('atp250',3),...fill('atp500',3),...fill('slam',1)];
+    else if(rank>250) plan=[...fill('atp250',3),...fill('atp500',3)];
+    else if(rank>100) plan=[...fill('atp500',4)];
+    else plan=[...fill('atp500',2)];
+  }else if(age>=19){
+    if(rank>900) plan=[...fill('challenger',3),...fill('atp250',4)];
+    else if(rank>500) plan=[...fill('challenger',1),...fill('atp250',4),...fill('atp500',2)];
+    else plan=[...fill('atp250',4),...fill('atp500',2)];
   }else if(age>=17){
-    plan=[...fill('challenger',4),...fill('atp250',3),...fill('atp500',1)];
-  }else{
     plan=[...fill('challenger',5),...fill('atp250',2)];
+  }else{
+    plan=[...fill('challenger',5),...fill('atp250',1)];
   }
-  let slamCount=0;
-  plan = plan.filter(t=>{ if(t==='slam'){ slamCount++; return slamCount<=4; } return true; });
   return plan;
 }
+
 function skillOf(p){
   const s = p.stats;
   const base = s.technique*0.28 + s.service*0.24 + s.physique*0.22 + s.mental*0.26 + 6;
   const form = (0.78 + 0.4*(p.energy/100)) * (0.85 + 0.3*(p.morale/100));
   return base * form;
 }
-function simulateTournament(p, tierId){
-  const tier = TIERS[tierId];
-  const baseSkill = skillOf(p);
-  let roundsWon = 0;
-  for(let r=0; r<tier.points.length-1; r++){
-    const oppSkill = tier.baseOpp + r*tier.oppInc + rand(-6,6);
-    const eff = baseSkill + rand(-5,5) + 12;
-    /* BUG CORRIGÉ : clamp() ne prend que (valeur, min, max). L'appel
-       original passait 4 arguments (0, 25, 0.98) ; le "25" était
-       silencieusement ignoré et le plafond réel de la probabilité
-       de victoire n'était jamais appliqué. On repasse à 3 arguments
-       avec des bornes cohérentes pour une probabilité (0.02 à 0.98). */
-    let winProb = clamp(eff/(eff+oppSkill), 0.02, 0.98);
-    if(Math.random() < winProb){ roundsWon++; } else { break; }
-  }
-  const points = tier.points[roundsWon];
-  const prize = tier.prize[roundsWon];
-  const champion = roundsWon === tier.points.length-1;
-  p.energy = clamp(p.energy - (tier.energyCost + roundsWon*2), 0, 100);
-  return { tierId, tierLabel:tier.label, roundsWon, points, prize, champion };
-}
+
 function roundLabel(roundsWon, totalRounds){
   const labels = ['1er tour','2e tour','3e tour','8es de finale','quarts de finale','demi-finale','finale','Titre 🏆'];
   const fromEnd = totalRounds - roundsWon;
@@ -642,6 +634,7 @@ function roundLabel(roundsWon, totalRounds){
   const idx = Math.max(0, labels.length - 1 - fromEnd);
   return labels[Math.min(idx, labels.length-2)];
 }
+
 function ageAdjust(p){
   if(p.age<=23){
     p.stats.technique = clamp(p.stats.technique + rand(0,2), 5, 99);
@@ -657,24 +650,107 @@ function ageAdjust(p){
     p.stats.service = clamp(p.stats.service - rand(0,1), 5, 99);
   }
 }
-function runSeason(p, intensityId){
+
+/* ============ MOTEUR DE SAISON, PAS À PAS ============ */
+function startSeason(p, choice){
   ageAdjust(p);
-  const plan = planSeason(p.rank, intensityId, p.age);
-  const results = [];
-  let seasonPoints = 0, seasonPrize = 0, titlesThisSeason = [];
-  let stopped = false;
-  for(const tierId of plan){
-    if(p.energy < 12){ stopped = true; break; }
-    const res = simulateTournament(p, tierId);
-    results.push(res);
-    seasonPoints += res.points;
-    seasonPrize += res.prize;
-    if(res.champion){ p.titles[tierId]++; titlesThisSeason.push(res.tierLabel); }
-    const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + (intensityId==='intensif'?2:0);
-    if(rand(1,100) <= injuryChance){ injure(p, choose(['cheville','genou','épaule','dos','poignet'])); break; }
+  if(p.skipSeason){
+    p.skipSeason = false;
+    p.lastRecap = { intensity:'Saison blanche', played:0, stopped:true, results:[], titlesThisSeason:[], seasonPoints:0, seasonPrize:0, rankBefore:p.rank, rankAfter:p.rank };
+    log(p, 'Saison blanche après une opération.');
+    p.energy = clamp(p.energy+50,0,100);
+    p.seasonsPlayed++;
+    p.phase = 'recap';
+    render();
+    return;
   }
-  p.money += seasonPrize;
-  p.points = Math.round(p.points*0.96 + seasonPoints);
+  const basePlan = planSeason(p.rank, choice.intensity, p.age);
+  const queue = basePlan.map(t=>({tier:t, slamId:null}));
+  Object.keys(choice.slams).forEach(sid=>{ if(choice.slams[sid]) queue.push({tier:'slam', slamId:sid}); });
+  for(let i=0;i<choice.masters;i++){ queue.push({tier:'masters', slamId:null}); }
+  p.seasonRun = {
+    queue, idx:0, results:[], seasonPoints:0, seasonPrize:0, titlesThisSeason:[], stopped:false,
+    current:null, intensityLabel: CALENDAR_OPTIONS.find(c=>c.id===choice.intensity).label,
+  };
+  advanceSeason(p);
+}
+
+function advanceSeason(p){
+  const run = p.seasonRun;
+  if(!run.current){
+    if(p.energy < 12 || run.idx >= run.queue.length){ finalizeSeason(p); return; }
+    const item = run.queue[run.idx]; run.idx++;
+    const totalRounds = TIERS[item.tier].points.length - 1;
+    run.current = { tier:item.tier, slamId:item.slamId, roundIndex:0, totalRounds, roundsWon:0, injuryBonus:0 };
+  }
+  simulateRounds(p);
+}
+
+function playRound(p, cur, tacticMod){
+  const tier = TIERS[cur.tier];
+  const baseSkill = skillOf(p);
+  const oppSkill = tier.baseOpp + cur.roundIndex*tier.oppInc + rand(-6,6);
+  const eff = baseSkill + rand(-5,5) + 12;
+  const winProb = clamp(eff/(eff+oppSkill) + tacticMod, 0.02, 0.98);
+  const won = Math.random() < winProb;
+  const roundCost = 2 + Math.floor(tier.energyCost / cur.totalRounds);
+  p.energy = clamp(p.energy - roundCost, 0, 100);
+  return won;
+}
+
+function simulateRounds(p){
+  const run = p.seasonRun; const cur = run.current;
+  while(cur.roundIndex < cur.totalRounds){
+    const isSemi = cur.roundIndex === cur.totalRounds - 2;
+    const isFinal = cur.roundIndex === cur.totalRounds - 1;
+    if(isSemi || isFinal){
+      p.phase = 'match_choice';
+      render();
+      return;
+    }
+    const won = playRound(p, cur, 0);
+    if(!won){ finishTournament(p, false); return; }
+    cur.roundIndex++;
+    cur.roundsWon++;
+  }
+  finishTournament(p, true);
+}
+
+function resolveTactic(p, tacticId){
+  const run = p.seasonRun; const cur = run.current;
+  const t = MATCH_TACTICS.find(x=>x.id===tacticId);
+  const won = playRound(p, cur, t.probMod);
+  p.energy = clamp(p.energy - t.energyCostMod, 0, 100);
+  cur.injuryBonus += t.injuryMod;
+  if(!won){ finishTournament(p, false); return; }
+  cur.roundIndex++;
+  cur.roundsWon++;
+  if(cur.roundIndex >= cur.totalRounds){ finishTournament(p, true); return; }
+  simulateRounds(p);
+}
+
+function finishTournament(p, champion){
+  const run = p.seasonRun; const cur = run.current; const tier = TIERS[cur.tier];
+  const points = tier.points[cur.roundsWon];
+  const prize = tier.prize[cur.roundsWon];
+  run.seasonPoints += points;
+  run.seasonPrize += prize;
+  if(champion){ p.titles[cur.tier]++; run.titlesThisSeason.push(tournamentLabel(cur.tier, cur.slamId)); }
+  const res = { tier:cur.tier, slamId:cur.slamId, roundsWon:cur.roundsWon, totalRounds:cur.totalRounds, points, prize, champion };
+  run.results.push(res);
+  const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + cur.injuryBonus;
+  let injured = false;
+  if(rand(1,100) <= injuryChance){ injure(p, choose(['cheville','genou','épaule','dos','poignet'])); injured = true; run.stopped = true; }
+  run.current = null;
+  p.lastTournamentResult = { ...res, injured };
+  p.phase = 'tournament_result';
+  render();
+}
+
+function finalizeSeason(p){
+  const run = p.seasonRun;
+  p.money += run.seasonPrize;
+  p.points = Math.round(p.points*0.96 + run.seasonPoints);
   p.prevRank = p.rank;
   p.rank = pointsToRank(p.points);
   if(p.rank < p.bestRank) p.bestRank = p.rank;
@@ -682,12 +758,15 @@ function runSeason(p, intensityId){
   p.energy = clamp(p.energy + 55, 0, 100);
   p.morale = clamp(p.morale + (p.morale<55 ? 8 : 2), 0, 100);
   p.lastRecap = {
-    intensity: CALENDAR_OPTIONS.find(c=>c.id===intensityId).label,
-    played: results.length, stopped, results, titlesThisSeason,
-    seasonPoints, seasonPrize, rankBefore: p.prevRank, rankAfter: p.rank,
+    intensity: run.intensityLabel, played: run.results.length, stopped: run.stopped, results: run.results,
+    titlesThisSeason: run.titlesThisSeason, seasonPoints: run.seasonPoints, seasonPrize: run.seasonPrize,
+    rankBefore: p.prevRank, rankAfter: p.rank,
   };
-  if(titlesThisSeason.length){ log(p, `${titlesThisSeason.length} titre(s) : ${titlesThisSeason.join(', ')}.`); }
+  if(run.titlesThisSeason.length){ log(p, `${run.titlesThisSeason.length} titre(s) : ${run.titlesThisSeason.join(', ')}.`); }
   log(p, `Fin de saison, classement #${p.rank}.`);
+  p.seasonRun = null;
+  p.phase = 'recap';
+  render();
 }
 
 /* ============ BILAN ============ */
@@ -951,7 +1030,9 @@ function renderGame(){
 function renderStage(){
   const p = player;
   const stage = document.getElementById('stage');
+
   if(p.phase === 'event'){
+    stage.style.background = '';
     const ev = pendingEvent || (pendingEvent = pickEvent(p));
     stage.innerHTML = `
       <div class="eyebrow">Saison ${p.season}</div>
@@ -964,43 +1045,101 @@ function renderStage(){
       const btn = document.createElement('button');
       btn.className = 'choice';
       btn.innerHTML = `<span class="tag">${c.tag}</span>${c.label}<span class="desc">${c.desc}</span>`;
-      btn.onclick = ()=>{ const beforeDecision=snapshotStats(p); c.effect(p); showDecisionGain(beforeDecision,p); pendingEvent = null; p.phase = 'calendar'; render(); };
-      wrap.appendChild(btn);
-    });
-  } else if(p.phase === 'calendar'){
-    stage.innerHTML = `
-      <div class="eyebrow">Saison ${p.season}</div>
-      <div class="stage-h">Quel calendrier ?</div>
-      <div class="stage-p">Votre classement (#${p.rank}) détermine les tournois accessibles.</div>
-      <div class="choices" id="calWrap"></div>
-      ${p.age>=30 ? '<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;"><button class="btn danger" id="retireBtn">Annoncer votre retraite</button>'+(p.age>=40?'<span class="stage-p" style="margin:0;align-self:center;">Tu peux continuer aussi longtemps que tu veux.</span>':'')+'</div>' : ''}
-    `;
-    const wrap = document.getElementById('calWrap');
-    CALENDAR_OPTIONS.forEach(c=>{
-      const btn = document.createElement('button');
-      btn.className = 'choice';
-      btn.innerHTML = `<span class="tag">${c.tag}</span>${c.label}<span class="desc">${c.desc}</span>`;
       btn.onclick = ()=>{
-        if(p.skipSeason){
-          p.skipSeason = false;
-          p.lastRecap = { intensity:'Saison blanche', played:0, stopped:true, results:[], titlesThisSeason:[], seasonPoints:0, seasonPrize:0, rankBefore:p.rank, rankAfter:p.rank };
-          log(p, 'Saison blanche après une opération.');
-          p.energy = clamp(p.energy+50,0,100);
-          p.seasonsPlayed++;
-        } else { runSeason(p, c.id); }
-        p.phase = 'recap'; render();
+        const before = snapshotStats(p);
+        c.effect(p);
+        const after = snapshotStats(p);
+        p.lastDecisionGain = { title: ev.title, choiceLabel: c.label, before, after };
+        pendingEvent = null;
+        p.phase = 'decision_result';
+        render();
       };
       wrap.appendChild(btn);
     });
-    const retireBtn = document.getElementById('retireBtn');
-    if(retireBtn){ retireBtn.onclick = ()=>{ p.retired = true; render(); }; }
+
+  } else if(p.phase === 'decision_result'){
+    stage.style.background = '';
+    const g = p.lastDecisionGain;
+    const labels = { technique:'Technique', service:'Service', physique:'Physique', mental:'Mental', morale:'Moral', energy:'Forme', rep:'Réputation', money:'Argent' };
+    const rows = Object.keys(labels).map(k=>{
+      const d = g.after[k] - g.before[k];
+      if(Math.abs(d) < 0.01) return '';
+      const cls = d>0 ? 'good' : 'bad';
+      const val = k==='money'
+        ? (d>0?'+':'') + eur(Math.round(d))
+        : (d>0?'+':'') + (Number.isInteger(d) ? d : d.toFixed(1));
+      return `<div class="recap-row"><span class="l">${labels[k]}</span><span class="r ${cls}">${val}</span></div>`;
+    }).join('');
+    stage.innerHTML = `
+      <div class="eyebrow">Conséquences</div>
+      <div class="stage-h">${g.choiceLabel}</div>
+      <div class="stage-p">${g.title}</div>
+      ${rows || '<div class="stage-p">Aucun changement mesurable.</div>'}
+      <div class="actions"><button class="btn" id="contDecisionBtn">Continuer</button></div>
+    `;
+    document.getElementById('contDecisionBtn').onclick = ()=>{ calendarChoice = null; p.phase = 'calendar'; render(); };
+
+  } else if(p.phase === 'calendar'){
+    stage.style.background = '';
+    if(p.skipSeason){
+      startSeason(p, {intensity:'standard', slams:{}, masters:0});
+      return;
+    }
+    renderCalendarPhase();
+
+  } else if(p.phase === 'match_choice'){
+    const run = p.seasonRun; const cur = run.current;
+    const colors = tournamentColors(cur.tier, cur.slamId);
+    stage.style.background = colors.light;
+    const stageLabel = (cur.roundIndex === cur.totalRounds-1) ? 'Finale' : 'Demi-finale';
+    stage.innerHTML = `
+      <div class="tourn-banner" style="background:${colors.primary};">
+        <div class="tourn-banner-name">${tournamentLabel(cur.tier, cur.slamId)}</div>
+        <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId)}</div>
+      </div>
+      <div class="eyebrow" style="margin-top:14px;">${stageLabel}</div>
+      <div class="stage-h">Quelle tactique adopter ?</div>
+      <div class="stage-p">Forme : ${Math.round(p.energy)} · Mental : ${Math.round(p.stats.mental)}</div>
+      <div class="choices" id="tacticWrap"></div>
+    `;
+    const wrap = document.getElementById('tacticWrap');
+    MATCH_TACTICS.forEach(t=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.style.borderLeft = `3px solid ${colors.primary}`;
+      btn.innerHTML = `<span class="tag" style="color:${colors.primary}">${t.tag}</span>${t.label}<span class="desc">${t.desc}</span>`;
+      btn.onclick = ()=>{ resolveTactic(p, t.id); };
+      wrap.appendChild(btn);
+    });
+
+  } else if(p.phase === 'tournament_result'){
+    const r = p.lastTournamentResult;
+    const colors = tournamentColors(r.tier, r.slamId);
+    stage.style.background = colors.light;
+    const rl = roundLabel(r.roundsWon, r.totalRounds);
+    stage.innerHTML = `
+      <div class="tourn-banner" style="background:${colors.primary};">
+        <div class="tourn-banner-name">${tournamentLabel(r.tier, r.slamId)}</div>
+        <div class="tourn-banner-sub">${tournamentSurface(r.tier, r.slamId)}</div>
+      </div>
+      <div class="eyebrow" style="margin-top:14px;">Résultat</div>
+      <div class="stage-h">${rl}</div>
+      <div class="recap-row"><span class="l">Points</span><span class="r good">+${r.points}</span></div>
+      <div class="recap-row"><span class="l">Gains</span><span class="r gold">${eur(r.prize)}</span></div>
+      ${r.injured ? '<div class="recap-row"><span class="l">Incident</span><span class="r bad">Blessure en fin de tournoi</span></div>' : ''}
+      <div class="actions"><button class="btn" id="contTournBtn">Continuer</button></div>
+    `;
+    document.getElementById('contTournBtn').onclick = ()=>{ advanceSeason(p); };
+
   } else if(p.phase === 'recap'){
+    stage.style.background = '';
     const r = p.lastRecap;
     let resultsHtml = '';
     if(r.results.length){
       resultsHtml = '<div class="results">' + r.results.map(res=>{
-        const rl = roundLabel(res.roundsWon, TIERS[res.tierId].points.length-1);
-        return `<div class="result ${res.champion?'title':''}"><span>${TIERS[res.tierId].label}</span><span>${rl}</span></div>`;
+        const rl = roundLabel(res.roundsWon, res.totalRounds);
+        const colors = tournamentColors(res.tier, res.slamId);
+        return `<div class="result ${res.champion?'title':''}" style="border-left-color:${colors.primary}"><span>${tournamentLabel(res.tier, res.slamId)}</span><span>${rl}</span></div>`;
       }).join('') + '</div>';
     }
     stage.innerHTML = `
@@ -1016,11 +1155,68 @@ function renderStage(){
     `;
     document.getElementById('nextSeasonBtn').onclick = ()=>{
       p.season++; p.age++;
-      if(p.age>=45){ p.phase = 'event'; p.forcedRetire = false; }
-      else { p.phase = 'event'; }
+      p.phase = 'event';
       render();
     };
   }
+}
+
+function renderCalendarPhase(){
+  const p = player;
+  if(!calendarChoice) calendarChoice = { intensity:'standard', slams:{}, masters:0 };
+  const stage = document.getElementById('stage');
+  stage.innerHTML = `
+    <div class="eyebrow">Saison ${p.season}</div>
+    <div class="stage-h">Composez votre saison</div>
+    <div class="stage-p">Classement actuel : #${p.rank}. Choisissez le rythme des petits tournois, puis ajoutez les grands rendez-vous que vous voulez disputer — chacun rallonge la saison.</div>
+    <div class="eyebrow" style="margin-top:6px;">Calendrier de base</div>
+    <div class="choices" id="calWrap"></div>
+    <div class="eyebrow" style="margin-top:18px;">Grands tournois</div>
+    <div class="opt-grid" id="bigWrap"></div>
+    ${p.age>=30 ? '<div style="margin-top:16px;"><button class="btn danger" id="retireBtn">Annoncer votre retraite</button></div>' : ''}
+    <div class="actions"><button class="btn" id="launchSeasonBtn">Lancer la saison</button></div>
+  `;
+
+  const calWrap = document.getElementById('calWrap');
+  CALENDAR_OPTIONS.forEach(c=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice' + (calendarChoice.intensity===c.id ? ' sel' : '');
+    btn.innerHTML = `<span class="tag">${c.tag}</span>${c.label}<span class="desc">${c.desc}</span>`;
+    btn.onclick = ()=>{ calendarChoice.intensity = c.id; renderCalendarPhase(); };
+    calWrap.appendChild(btn);
+  });
+
+  const bigWrap = document.getElementById('bigWrap');
+  SLAMS.forEach(s=>{
+    const sel = !!calendarChoice.slams[s.id];
+    const d = document.createElement('div');
+    d.className = 'opt' + (sel ? ' sel' : '');
+    d.style.borderLeft = `4px solid ${s.colors.primary}`;
+    d.innerHTML = `<div class="h">${s.label}</div><div class="d">${s.surface} · ${s.place}</div>`;
+    d.onclick = ()=>{ calendarChoice.slams[s.id] = !calendarChoice.slams[s.id]; renderCalendarPhase(); };
+    bigWrap.appendChild(d);
+  });
+
+  const mCard = document.createElement('div');
+  mCard.className = 'opt';
+  mCard.style.borderLeft = `4px solid ${TIER_COLORS.masters.primary}`;
+  mCard.innerHTML = `<div class="h">Masters 1000</div><div class="d">${calendarChoice.masters} sélectionné(s) sur 4</div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <button class="btn outline" id="mastersMinus" style="padding:6px 12px;">−</button>
+      <button class="btn outline" id="mastersPlus" style="padding:6px 12px;">+</button>
+    </div>`;
+  bigWrap.appendChild(mCard);
+  document.getElementById('mastersMinus').onclick = ()=>{ calendarChoice.masters = Math.max(0, calendarChoice.masters-1); renderCalendarPhase(); };
+  document.getElementById('mastersPlus').onclick = ()=>{ calendarChoice.masters = Math.min(4, calendarChoice.masters+1); renderCalendarPhase(); };
+
+  const retireBtn = document.getElementById('retireBtn');
+  if(retireBtn){ retireBtn.onclick = ()=>{ p.retired = true; render(); }; }
+
+  document.getElementById('launchSeasonBtn').onclick = ()=>{
+    const choice = calendarChoice;
+    calendarChoice = null;
+    startSeason(p, choice);
+  };
 }
 
 function renderEnd(){
@@ -1072,6 +1268,7 @@ function renderEnd(){
 }
 
 render();
+
 </script>
 </body>
 </html>
