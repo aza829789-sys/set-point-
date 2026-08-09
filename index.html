@@ -46,9 +46,9 @@ h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 #bg-court svg{ width:min(1400px, 160vw); height:auto; margin-top:-40px; }
 
 /* Textures de surface, posées derrière les cartes pendant les tournois */
-.surface-clay{ background-image: radial-gradient(rgba(180,85,42,0.10) 1px, transparent 1.4px), radial-gradient(rgba(180,85,42,0.07) 1px, transparent 1.4px); background-size:9px 9px, 13px 13px; background-position:0 0, 4px 6px; }
-.surface-grass{ background-image: repeating-linear-gradient(90deg, rgba(27,94,58,0.07) 0 10px, rgba(27,94,58,0.02) 10px 20px); }
-.surface-hard{ background-image: repeating-linear-gradient(45deg, rgba(61,106,140,0.05) 0 12px, transparent 12px 24px); }
+.surface-clay{ background-color:#E8B48E !important; background-image: radial-gradient(rgba(120,55,20,0.16) 1px, transparent 1.4px), radial-gradient(rgba(120,55,20,0.12) 1px, transparent 1.4px), repeating-linear-gradient(0deg, rgba(120,55,20,0.05) 0 3px, transparent 3px 9px); background-size:9px 9px, 13px 13px, auto; background-position:0 0, 4px 6px, 0 0; }
+.surface-grass{ background-color:#BFE3A0 !important; background-image: repeating-linear-gradient(90deg, rgba(27,94,58,0.16) 0 10px, rgba(27,94,58,0.05) 10px 20px); }
+.surface-hard{ background-color:#AFCBE8 !important; background-image: repeating-linear-gradient(45deg, rgba(30,70,110,0.14) 0 12px, transparent 12px 24px); }
 
 .icon-ball{display:inline-block; vertical-align:middle;}
 .court-divider{
@@ -505,12 +505,29 @@ const CROWD_ICON = (size=28, color='#647B6C') => `<svg width="${size}" height="$
 <circle cx="20" cy="11" r="5" fill="${color}"/><path d="M12 30c0-7 5-11 8-11s8 4 8 11" fill="${color}"/>
 <circle cx="32" cy="14" r="4" fill="${color}" opacity=".6"/><path d="M26 30c0-6 4-9 6-9s6 3 6 9" fill="${color}" opacity=".6"/>
 </svg>`;
-const FLAG_BY_NATION = { fr:'🇫🇷', uk:'🇬🇧', us:'🇺🇸', au:'🇦🇺', es:'🇪🇸', sr:'🇷🇸', ar:'🇦🇷', ma:'🇲🇦', jp:'🇯🇵', it:'🇮🇹' };
-function nationBadge(nation, size=22){
-  const flag = FLAG_BY_NATION[nation.id] || '🌍';
-  return `<span class="flag-badge" style="font-size:${Math.round(size*0.9)}px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;" aria-label="${nation.label}">${flag}</span>`;
+/* ============ DRAPEAUX EN SVG (fiables sur toutes les plateformes, pas de lettres de secours) ============ */
+const NATION_FLAG_SVG = {
+  fr: (w,h)=>`<rect width="${w/3}" height="${h}" fill="#0055A4"/><rect x="${w/3}" width="${w/3}" height="${h}" fill="#FFFFFF"/><rect x="${2*w/3}" width="${w/3}" height="${h}" fill="#EF4135"/>`,
+  it: (w,h)=>`<rect width="${w/3}" height="${h}" fill="#009246"/><rect x="${w/3}" width="${w/3}" height="${h}" fill="#FFFFFF"/><rect x="${2*w/3}" width="${w/3}" height="${h}" fill="#CE2B37"/>`,
+  uk: (w,h)=>`<rect width="${w}" height="${h}" fill="#00247D"/><polygon points="0,0 ${w},${h} ${w},${h*0.35} ${w*0.35},0" fill="#fff"/><polygon points="0,${h} ${w},0 ${w},${h*0.65} ${w*0.65},${h}" fill="#fff"/><polygon points="0,0 ${w*0.14},0 ${w},${h*0.86} ${w},${h}" fill="#CF142B"/><polygon points="0,${h} 0,${h*0.86} ${w*0.86},0 ${w},0" fill="#CF142B"/><rect x="${w*0.42}" width="${w*0.16}" height="${h}" fill="#fff"/><rect y="${h*0.4}" width="${w}" height="${h*0.2}" fill="#fff"/><rect x="${w*0.45}" width="${w*0.1}" height="${h}" fill="#CF142B"/><rect y="${h*0.44}" width="${w}" height="${h*0.12}" fill="#CF142B"/>`,
+  us: (w,h)=>{ let s=''; const rowH=h/7; for(let i=0;i<7;i++){ s+=`<rect y="${i*rowH}" width="${w}" height="${rowH}" fill="${i%2===0?'#B22234':'#FFFFFF'}"/>`; } s+=`<rect width="${w*0.4}" height="${h*4/7}" fill="#3C3B6E"/>`; return s; },
+  au: (w,h)=>`<rect width="${w}" height="${h}" fill="#00247D"/><polygon points="0,0 ${w*0.32},0 0,${h*0.5}" fill="#fff"/><polygon points="0,0 ${w*0.18},0 0,${h*0.28}" fill="#CF142B"/><circle cx="${w*0.72}" cy="${h*0.3}" r="${h*0.05}" fill="#fff"/><circle cx="${w*0.82}" cy="${h*0.5}" r="${h*0.05}" fill="#fff"/><circle cx="${w*0.68}" cy="${h*0.68}" r="${h*0.05}" fill="#fff"/><circle cx="${w*0.85}" cy="${h*0.82}" r="${h*0.05}" fill="#fff"/><circle cx="${w*0.76}" cy="${h*0.5}" r="${h*0.07}" fill="#fff"/>`,
+  es: (w,h)=>`<rect width="${w}" height="${h}" fill="#AA151B"/><rect y="${h*0.25}" width="${w}" height="${h*0.5}" fill="#F1BF00"/>`,
+  sr: (w,h)=>`<rect width="${w}" height="${h/3}" fill="#C6363C"/><rect y="${h/3}" width="${w}" height="${h/3}" fill="#0C4076"/><rect y="${2*h/3}" width="${w}" height="${h/3}" fill="#FFFFFF"/>`,
+  ar: (w,h)=>`<rect width="${w}" height="${h/3}" fill="#74ACDF"/><rect y="${h/3}" width="${w}" height="${h/3}" fill="#FFFFFF"/><rect y="${2*h/3}" width="${w}" height="${h/3}" fill="#74ACDF"/><circle cx="${w/2}" cy="${h/2}" r="${h*0.12}" fill="#F6B40E"/>`,
+  ma: (w,h)=>`<rect width="${w}" height="${h}" fill="#C1272D"/><polygon points="${w/2},${h*0.32} ${w*0.56},${h*0.44} ${w*0.68},${h*0.44} ${w*0.58},${h*0.52} ${w*0.62},${h*0.64} ${w/2},${h*0.56} ${w*0.38},${h*0.64} ${w*0.42},${h*0.52} ${w*0.32},${h*0.44} ${w*0.44},${h*0.44}" fill="#006233"/>`,
+  jp: (w,h)=>`<rect width="${w}" height="${h}" fill="#FFFFFF"/><circle cx="${w/2}" cy="${h/2}" r="${h*0.3}" fill="#BC002D"/>`,
+};
+function nationFlagSvg(id, w=30, h=20){
+  const draw = NATION_FLAG_SVG[id];
+  const inner = draw ? draw(w,h) : `<rect width="${w}" height="${h}" fill="#8A94A0"/>`;
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="border-radius:2px;display:block;">${inner}</svg>`;
 }
-function hostFlag(slam){ return `<span class="host-flag" title="Pays hôte : ${slam.host}">${slam.flag}</span>`; }
+function nationBadge(nation, size=22){
+  const w = Math.round(size*1.4), h = size;
+  return `<span class="flag-badge" style="display:inline-flex;align-items:center;justify-content:center;width:${w}px;height:${h}px;overflow:hidden;border-radius:3px;box-shadow:0 0 0 1px rgba(0,0,0,.12);" aria-label="${nation.label}">${nationFlagSvg(nation.id, w, h)}</span>`;
+}
+function hostFlag(slam){ const nid = SLAM_HOST_NATION[slam.id] || 'fr'; return `<span class="host-flag" title="Pays hôte : ${slam.host}" style="display:inline-flex;vertical-align:middle;border-radius:2px;overflow:hidden;margin-right:4px;">${nationFlagSvg(nid, 22, 15)}</span>`; }
 
 const SLAM_ELIGIBLE_RANK = 200;
 const NATION_SLAM_ID = { fr:'rg', uk:'wim', us:'uso', au:'ao' };
@@ -637,6 +654,7 @@ const TIERS = {
   slam:{ label:'Grand Chelem', baseOpp:75, oppInc:5, points:[10,45,90,180,360,720,1200], prize:[60000,120000,220000,400000,700000,1300000,2400000], energyCost:13 }
 };
 
+const SLAM_HOST_NATION = { ao:'au', rg:'fr', wim:'uk', uso:'us' };
 /* Identité et couleurs des 4 levées du Grand Chelem, par surface */
 const SLAMS = [
   { id:'ao', label:'Grand Chelem australien', short:'Majeur australien', host:'Australie', flag:'🇦🇺', surface:'Dur', place:'Australie', colors:{ primary:'#1B4B8C', light:'#EAF2FB', accent:'#4F8FDB' } },
@@ -1618,6 +1636,12 @@ function render(){
   if(player.retired || player.forcedRetire){ renderEnd(); return; }
   renderGame();
 }
+let leaderboardFetchStarted = false;
+function ensureLeaderboardFetched(){
+  if(leaderboardFetchStarted) return;
+  leaderboardFetchStarted = true;
+  refreshRemoteLeaderboard();
+}
 
 /* ============ RECORDS PERSONNELS (Hall of Fame, persiste entre les parties) ============ */
 function loadHallOfFame(){
@@ -1628,6 +1652,19 @@ function saveHallOfFame(entry){
   try{ localStorage.setItem('setpoint_hof', JSON.stringify(entry)); }
   catch(e){}
 }
+
+/* ============ LEADERBOARD MONDIAL PARTAGÉ ============ */
+/* kvdb.io est un service de stockage clé-valeur gratuit, sans compte, utilisable directement en fetch() depuis le navigateur.
+   Pour activer un vrai classement partagé entre tous les joueurs (pas seulement sur cet appareil) :
+   1) ouvrez https://kvdb.io/ dans un navigateur et cliquez sur "Create a bucket"
+   2) copiez l'identifiant de bucket obtenu (une suite de caractères)
+   3) collez-le ci-dessous à la place de 'REMPLACER_PAR_VOTRE_BUCKET_KVDB'
+   Sans cette étape, le classement reste local à chaque appareil (comportement de secours automatique). */
+const LEADERBOARD_BUCKET = 'KDeFsfXdXHwniK8hg8UMn3';
+const LEADERBOARD_REMOTE_URL = (LEADERBOARD_BUCKET && LEADERBOARD_BUCKET !== 'KDeFsfXdXHwniK8hg8UMn3')
+  ? `https://kvdb.io/${LEADERBOARD_BUCKET}/scores` : null;
+let remoteLeaderboardCache = null;
+let remoteLeaderboardFailed = false;
 
 const LEADERBOARD_STORAGE='setpoint_scores';
 const PLAYER_ID_STORAGE='setpoint_player_id';
@@ -1644,34 +1681,67 @@ function detectPlatform(){
   if(/playstation|xbox|nintendo/.test(ua)) return 'Console';
   return 'PC';
 }
-async function syncLeaderboardEntry(entry){
-  // Point d'entrée prévu pour le futur backend multijoueur.
-  // Si LEADERBOARD_API est défini, le score peut être envoyé au serveur.
-  if(typeof LEADERBOARD_API==='undefined' || !LEADERBOARD_API) return;
-  try{await fetch(LEADERBOARD_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(entry)});}catch(e){}
+function readLocalScores(){ try{ return JSON.parse(localStorage.getItem(LEADERBOARD_STORAGE)||'[]'); }catch(e){ return []; } }
+function writeLocalScores(list){ try{ localStorage.setItem(LEADERBOARD_STORAGE, JSON.stringify(list.slice(0,200))); }catch(e){} }
+function mergeScoreLists(a, b){
+  const byId = {};
+  [...a, ...b].forEach(e=>{
+    const prev = byId[e.playerId];
+    if(!prev || e.at > prev.at) byId[e.playerId] = e;
+  });
+  return Object.values(byId).sort((x,y)=>y.score-x.score || x.at-y.at);
+}
+async function fetchRemoteScores(){
+  if(!LEADERBOARD_REMOTE_URL) return null;
+  try{
+    const res = await fetch(LEADERBOARD_REMOTE_URL);
+    if(res.status===404) return [];
+    if(!res.ok) throw new Error('bad status');
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }catch(e){ remoteLeaderboardFailed = true; return null; }
+}
+async function pushRemoteScores(list){
+  if(!LEADERBOARD_REMOTE_URL) return;
+  try{ await fetch(LEADERBOARD_REMOTE_URL, { method:'POST', body: JSON.stringify(list.slice(0,200)) }); }
+  catch(e){ remoteLeaderboardFailed = true; }
 }
 function loadGlobalLeaderboard(){
-  let local=[];try{local=JSON.parse(localStorage.getItem(LEADERBOARD_STORAGE)||'[]');}catch(e){}
-  return local.sort((a,b)=>b.score-a.score || a.at-b.at).slice(0,20);
+  const local = readLocalScores();
+  const merged = remoteLeaderboardCache ? mergeScoreLists(local, remoteLeaderboardCache) : local;
+  return merged.sort((a,b)=>b.score-a.score || a.at-b.at).slice(0,20);
 }
-function saveGlobalScore(p){
+async function refreshRemoteLeaderboard(){
+  const remote = await fetchRemoteScores();
+  if(remote){ remoteLeaderboardCache = remote; render(); }
+}
+async function saveGlobalScore(p){
   if(p.globalScoreSaved) return;
   p.globalScoreSaved=true;
   const entry={playerId:getLocalPlayerId(),name:p.name,score:legendScore(p),circuit:p.circuit||'hommes',platform:detectPlatform(),at:Date.now()};
-  try{
-    const list=JSON.parse(localStorage.getItem(LEADERBOARD_STORAGE)||'[]');
-    const same=list.filter(x=>x.playerId!==entry.playerId);
-    same.push(entry);
-    localStorage.setItem(LEADERBOARD_STORAGE,JSON.stringify(same.sort((a,b)=>b.score-a.score).slice(0,100)));
-  }catch(e){}
-  syncLeaderboardEntry(entry);
+  const local = readLocalScores();
+  const localMerged = mergeScoreLists(local, [entry]);
+  writeLocalScores(localMerged);
+  const remote = await fetchRemoteScores();
+  if(remote){
+    const merged = mergeScoreLists(remote, [entry]);
+    remoteLeaderboardCache = merged;
+    await pushRemoteScores(merged);
+  } else {
+    remoteLeaderboardCache = remoteLeaderboardCache ? mergeScoreLists(remoteLeaderboardCache, [entry]) : null;
+  }
+  render();
 }
 function renderLeaderboard(){
   const rows=loadGlobalLeaderboard();
+  const sourceNote = LEADERBOARD_REMOTE_URL
+    ? (remoteLeaderboardFailed ? 'Connexion au classement mondial indisponible pour le moment · scores locaux affichés.' : 'Classement partagé entre tous les joueurs.')
+    : 'Classement local à cet appareil (activez le classement mondial partagé dans le code).';
   const body=rows.length ? rows.map((r,i)=>`<div class="leaderboard-row"><div class="leaderboard-rank">${String(i+1).padStart(2,'0')}</div><div><div class="leaderboard-name">${r.name}</div><div class="leaderboard-meta">${circuitConfig(r.circuit).short} · ${r.platform||'PC'} <span class="platform-badge">${r.playerId||'PLAYER'}</span></div></div><div class="leaderboard-score">${r.score}<span style="font-size:8px;color:#6e8585;margin-left:3px;">PTS</span></div></div>`).join('') : `<div class="leaderboard-empty">Aucun score enregistré pour le moment.<br>Terminez une carrière pour entrer dans le classement.</div>`;
-  return `<div class="card leaderboard"><div class="eyebrow">GLOBAL RANKING</div><div class="stage-h" style="font-size:20px;">Leaderboard mondial · toutes plateformes</div><div class="stage-p" style="font-size:12px;margin-bottom:10px;">Le nom choisi à la création devient votre identité publique dans le classement.</div>${body}</div>`;
+  return `<div class="card leaderboard"><div class="eyebrow">GLOBAL RANKING</div><div class="stage-h" style="font-size:20px;">Leaderboard mondial · toutes plateformes</div><div class="stage-p" style="font-size:12px;margin-bottom:10px;">Le nom choisi à la création devient votre identité publique dans le classement.<br><span style="opacity:.75;">${sourceNote}</span></div>${body}</div>`;
 }
 function renderIntro(){
+  ensureLeaderboardFetched();
   const hof = loadHallOfFame();
   app.innerHTML = `
     <div class="hero">
@@ -1893,7 +1963,7 @@ function renderStage(){
   } else if(p.phase === 'gameplan'){
     const run = p.seasonRun; const cur = run.current;
     const colors = tournamentColors(cur.tier, cur.slamId);
-    stage.style.background = colors.light;
+    stage.style.background = '';
     stage.className = 'card surface-' + ({dur:'hard', terre:'clay', gazon:'grass'}[matchSurface(cur)] || 'hard');
     const ev = pendingGameplan;
     stage.innerHTML = `
@@ -1925,7 +1995,7 @@ function renderStage(){
   } else if(p.phase === 'match_choice'){
     const run = p.seasonRun; const cur = run.current;
     const colors = tournamentColors(cur.tier, cur.slamId);
-    stage.style.background = colors.light;
+    stage.style.background = '';
     stage.className = 'card surface-' + ({dur:'hard', terre:'clay', gazon:'grass'}[matchSurface(cur)] || 'hard');
     const isFinal = cur.roundIndex === cur.totalRounds-1;
     const stageLabel = isFinal ? 'Finale' : 'Demi-finale';
@@ -1964,7 +2034,7 @@ function renderStage(){
   } else if(p.phase === 'tournament_result'){
     const r = p.lastTournamentResult;
     const colors = tournamentColors(r.tier, r.slamId);
-    stage.style.background = colors.light;
+    stage.style.background = '';
     stage.className = 'card surface-' + ({dur:'hard', terre:'clay', gazon:'grass'}[matchSurface(r)] || 'hard');
     const rl = roundLabel(r.roundsWon, r.totalRounds);
     stage.innerHTML = `
