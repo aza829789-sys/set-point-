@@ -305,6 +305,47 @@ const COURT_ILLUSTRATION = (w=520,h=280) => `<svg width="${w}" height="${h}" vie
 const SLAM_ELIGIBLE_RANK = 200;
 const NATION_SLAM_ID = { fr:'rg', uk:'wim', us:'uso', au:'ao' };
 
+/* ============ SURFACES & INFLUENCE NATIONALITÉ / STYLE ============ */
+const SURFACES = ['dur','terre','gazon'];
+const SURFACE_LABELS = { dur:'Dur', terre:'Terre battue', gazon:'Gazon' };
+/* Chaque nation a une culture de surface dominante : familiarité accrue sur cette surface */
+const NATION_SURFACE = { fr:'terre', es:'terre', ar:'terre', it:'terre', uk:'gazon', au:'dur', us:'dur', jp:'dur', sr:'dur', ma:'terre' };
+const SLAM_SURFACE = { ao:'dur', rg:'terre', wim:'gazon', uso:'dur' };
+/* Affinité de style par surface : bonus/malus de probabilité de victoire */
+const STYLE_SURFACE_BONUS = {
+  fond:    { terre:0.05, dur:0.0,  gazon:-0.04 },
+  sv:      { terre:-0.06, dur:0.01, gazon:0.07 },
+  poly:    { terre:0.01, dur:0.02, gazon:0.01 },
+  cogneur: { terre:-0.02, dur:0.04, gazon:0.02 },
+};
+function matchSurface(cur){
+  if(cur.tier==='slam') return SLAM_SURFACE[cur.slamId] || 'dur';
+  return cur.surface || 'dur';
+}
+/* Bonus lié à la nationalité : familiarité de surface + soutien du public à domicile */
+function nationSurfaceMod(p, surface){
+  return NATION_SURFACE[p.nation.id]===surface ? 0.02 : 0;
+}
+function homeCrowdMod(p, cur){
+  if(cur.tier==='slam' && NATION_SLAM_ID[p.nation.id]===cur.slamId) return 0.05;
+  return 0;
+}
+function styleSurfaceMod(p, surface){
+  const t = STYLE_SURFACE_BONUS[p.style.id];
+  return t ? (t[surface]||0) : 0;
+}
+/* Seeding : un joueur mieux classé évite les gros chocs tôt dans le tableau, et inversement */
+function seedingMod(p, cur){
+  const progress = cur.totalRounds<=1 ? 1 : cur.roundIndex / (cur.totalRounds-1);
+  let rankFactor = 0;
+  if(p.rank<=8) rankFactor = 0.05;
+  else if(p.rank<=32) rankFactor = 0.03;
+  else if(p.rank<=100) rankFactor = 0.01;
+  else if(p.rank>500) rankFactor = -0.02;
+  // avantage en début de tableau, désavantage (retour à l'équilibre) en fin de tableau contre les meilleurs
+  return rankFactor * (1 - progress) - rankFactor*0.4*progress;
+}
+
 /* ============ DONNÉES ============ */
 const NATIONS = [
   { id:'fr', label:'France', slam:'Roland-Garros' },
@@ -333,11 +374,11 @@ const BACKGROUNDS = [
 ];
 
 const TIERS = {
-  challenger:{ label:'Challenger', baseOpp:27, oppInc:4, points:[5,12,25,45,80], prize:[400,900,2000,4200,9000], energyCost:6 },
-  atp250:{ label:'ATP 250', baseOpp:39, oppInc:4, points:[8,16,30,55,105,170], prize:[3000,6000,12000,25000,55000,120000], energyCost:8 },
-  atp500:{ label:'ATP 500', baseOpp:49, oppInc:4, points:[8,16,35,70,140,250], prize:[6000,12000,25000,50000,110000,250000], energyCost:9 },
-  masters:{ label:'Masters 1000', baseOpp:59, oppInc:4, points:[10,20,45,90,180,360], prize:[15000,30000,60000,120000,250000,500000], energyCost:11 },
-  slam:{ label:'Grand Chelem', baseOpp:67, oppInc:4, points:[10,45,90,180,360,720,1200], prize:[60000,120000,220000,400000,700000,1300000,2400000], energyCost:13 }
+  challenger:{ label:'Challenger', baseOpp:31, oppInc:5, points:[5,12,25,45,80], prize:[400,900,2000,4200,9000], energyCost:6 },
+  atp250:{ label:'ATP 250', baseOpp:44, oppInc:5, points:[8,16,30,55,105,170], prize:[3000,6000,12000,25000,55000,120000], energyCost:8 },
+  atp500:{ label:'ATP 500', baseOpp:55, oppInc:5, points:[8,16,35,70,140,250], prize:[6000,12000,25000,50000,110000,250000], energyCost:9 },
+  masters:{ label:'Masters 1000', baseOpp:66, oppInc:5, points:[10,20,45,90,180,360], prize:[15000,30000,60000,120000,250000,500000], energyCost:11 },
+  slam:{ label:'Grand Chelem', baseOpp:75, oppInc:5, points:[10,45,90,180,360,720,1200], prize:[60000,120000,220000,400000,700000,1300000,2400000], energyCost:13 }
 };
 
 /* Identité et couleurs des 4 levées du Grand Chelem, par surface */
@@ -364,10 +405,45 @@ function tournamentLabel(tierId, slamId){
   if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.label; }
   return TIERS[tierId].label;
 }
-function tournamentSurface(tierId, slamId){
+function tournamentSurface(tierId, slamId, surface){
   if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.surface + ' · ' + s.place; }
-  if(tierId==='masters') return 'Grand rendez-vous du circuit';
-  return 'Circuit international';
+  const surfLabel = surface ? SURFACE_LABELS[surface] : null;
+  if(tierId==='masters') return surfLabel ? `${surfLabel} · Grand rendez-vous du circuit` : 'Grand rendez-vous du circuit';
+  return surfLabel ? `${surfLabel} · Circuit international` : 'Circuit international';
+}
+
+/* ============ GAME PLAN — préparation face à un adversaire coriace ============ */
+const GAME_PLAN_EVENTS = [
+  { title:'Un adversaire qui vous a déjà battu', text:'Vous étudiez la vidéo : cet adversaire vous a déjà posé des problèmes par le passé.',
+    choices:[
+      {label:'Revoir vos matchs contre lui', tag:'Analyse', desc:'+ de repères tactiques, un peu de fatigue mentale.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.03; p.energy=clamp(p.energy-2,0,100);}},
+      {label:'Tourner la page', tag:'Mental', desc:'Vous jouez le moment présent, sans y penser.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.015; p.morale=clamp(p.morale+2,0,100);}}
+    ]},
+  { title:'Un adversaire classé bien au-dessus de vous', text:'Le tableau est cruel : votre adversaire du jour évolue plusieurs dizaines de places devant vous.',
+    choices:[
+      {label:'Jouer sans pression, en outsider', tag:'Liberté', desc:'Rien à perdre, tout à gagner.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.04; p.morale=clamp(p.morale+3,0,100);}},
+      {label:'Serrer les rangs dès le début', tag:'Rigueur', desc:'Vous misez sur la discipline plus que sur l\'audace.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.02; p.energy=clamp(p.energy-1,0,100);}}
+    ]},
+  { title:'Un style qui ne vous convient pas', text:'Votre adversaire possède un style connu pour déstabiliser des joueurs comme vous.',
+    choices:[
+      {label:'Travailler un plan anti-style', tag:'Tactique', desc:'Votre coach prépare une parade sur mesure.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.035; p.energy=clamp(p.energy-3,0,100);}},
+      {label:'Rester sur vos forces', tag:'Confiance', desc:'Vous ne changez rien à votre jeu habituel.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.01; p.morale=clamp(p.morale+1,0,100);}}
+    ]},
+  { title:'La rumeur d\'une petite gêne physique adverse', text:'Les journalistes parlent d\'une gêne physique chez votre adversaire du jour. Info ou intox ?',
+    choices:[
+      {label:'Le pousser physiquement dès le départ', tag:'Pression', desc:'Vous tentez d\'accélérer le rythme dès l\'entame.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.03; p.energy=clamp(p.energy-3,0,100);}},
+      {label:'Ignorer la rumeur', tag:'Prudence', desc:'Vous préparez le match normalement.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.015;}}
+    ]},
+  { title:'Un choc trop tôt dans le tableau', text:'Le tirage au sort a été impitoyable : ce duel ressemble déjà à une finale avant l\'heure.',
+    choices:[
+      {label:'Se donner à fond, sans calcul', tag:'Engagement', desc:'Vous acceptez le combat total.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)+0.045; p.energy=clamp(p.energy-5,0,100);}},
+      {label:'Gérer vos forces pour la suite', tag:'Gestion', desc:'Vous pensez déjà au tour suivant.', effect:(p,cur)=>{cur.gameplanBonus=(cur.gameplanBonus||0)-0.01; p.energy=clamp(p.energy+3,0,100);}}
+    ]},
+];
+function isToughOpponent(p, cur){
+  const tier = TIERS[cur.tier];
+  const oppSkill = tier.baseOpp + cur.roundIndex*tier.oppInc;
+  return (oppSkill - skillOf(p)) > 6;
 }
 
 /* Tactiques disponibles en demi-finale et en finale — un pool large, 3 proposées à chaque fois */
@@ -406,6 +482,32 @@ const MATCH_INTROS_FINAL = [
 function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=rand(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function pickTactics(n=3){ return shuffle(MATCH_TACTICS).slice(0,n); }
 
+/* ============ SCRIPTS DE DEMI-FINALE (5) ET DE FINALE (5) ============ */
+const SEMI_SCRIPTS = [
+  { h:'Un tableau qui se resserre', t:'Il ne reste que quatre joueurs. La tension monte dans le vestiaire, chacun sent que le titre se rapproche.' },
+  { h:'La revanche', t:'Vous avez étudié cet adversaire toute la semaine. Cette demi-finale a un petit goût de revanche.' },
+  { h:'Le piège de la demi-finale', t:'Combien de favoris sont tombés à ce stade, trop pressés de penser à la finale ? Pas vous, pas aujourd\'hui.' },
+  { h:'Une salle en ébullition', t:'Le court est bondé. Une victoire ici, et votre nom entre dans l\'histoire du tournoi.' },
+  { h:'Le dernier obstacle', t:'Un joueur vous sépare de la finale. Un seul, mais coriace.' },
+];
+const FINAL_SCRIPTS = [
+  { h:'Le rendez-vous avec le trophée', t:'Le trophée est déjà exposé, bien en vue. Il ne manque qu\'un nom à graver dessus.' },
+  { h:'Une finale sous tension', t:'Les deux bancs se regardent en silence. Tout le monde retient son souffle avant l\'entrée sur le court.' },
+  { h:'La consécration attend', t:'Une victoire aujourd\'hui changerait durablement le regard porté sur votre carrière.' },
+  { h:'Face à votre meilleur souvenir', t:'Vous repensez à votre première balle de tennis, il y a si longtemps. Tout mène à cet instant.' },
+  { h:'Le stade retient son souffle', t:'Les tribunes sont pleines à craquer. Le speaker prononce votre nom, la clameur répond aussitôt.' },
+];
+function pickScript(p, key, scripts){
+  const usedKey = key+'Used';
+  if(!p[usedKey]) p[usedKey] = [];
+  let pool = scripts.filter((_,i)=>!p[usedKey].includes(i));
+  if(!pool.length){ p[usedKey] = []; pool = scripts; }
+  const chosen = choose(pool);
+  const idx = scripts.indexOf(chosen);
+  p[usedKey].push(idx);
+  return chosen;
+}
+
 const RANK_BANDS = [
   [9200, 1], [7500, 5], [6000, 12], [4600, 22], [3400, 40],
   [2400, 65], [1600, 100], [1000, 160], [600, 260], [320, 420],
@@ -428,6 +530,89 @@ function pointsToRank(points){
     }
   }
   return 1400;
+}
+
+/* ============ PRESSE & RÉSEAUX SOCIAUX ============ */
+/* Grand pool de commentaires, classés par catégorie de résultat, pour éviter toute répétition perceptible.
+   Chaque commentaire propose deux réactions possibles, avec des effets différents sur le moral. */
+const PRESS_COMMENTS = {
+  title: [
+    { author:'@CircuitWatch', text:'Quel titre ! Ce joueur est clairement en train de passer un cap.' },
+    { author:'L\'Équipe Tennis', text:'"Une performance de patron du début à la fin", écrit notre envoyé spécial.' },
+    { author:'@FanDuCircuit22', text:'Je le suis depuis ses débuts, ce titre était mérité mille fois.' },
+    { author:'@SkepticTennis', text:'Un joli titre, mais attention à ne pas s\'enflammer trop vite.' },
+    { author:'Radio Court Central', text:'"Un tel titre à cet âge, ça ne trompe pas", analyse notre consultant.' },
+    { author:'@TabloidSport', text:'Déjà des rumeurs de nouveau contrat sponsor après ce sacre !' },
+  ],
+  final_loss: [
+    { author:'@CircuitWatch', text:'Si près du but... cette finale perdue va laisser des traces.' },
+    { author:'L\'Équipe Tennis', text:'"Une finale à oublier vite", titre notre journaliste, un brin sévère.' },
+    { author:'@FanDuCircuit22', text:'Perdre une finale, ce n\'est pas une honte. La suite s\'annonce belle.' },
+    { author:'@SkepticTennis', text:'Encore une finale qui échappe. Le vrai palier reste à passer.' },
+    { author:'Radio Court Central', text:'"Il faudra digérer cette défaite en finale rapidement", prévient le consultant.' },
+  ],
+  semi_loss: [
+    { author:'@CircuitWatch', text:'Sorti en demi-finale, mais le niveau affiché rassure pour la suite.' },
+    { author:'@FanDuCircuit22', text:'Une demi-finale, c\'est un super résultat, ne l\'oublions pas !' },
+    { author:'@SkepticTennis', text:'Toujours ce mur des demi-finales. Il faudra le franchir un jour.' },
+    { author:'L\'Équipe Tennis', text:'"Encore une demi-finale prometteuse, mais sans suite", note la rédaction.' },
+  ],
+  early_exit: [
+    { author:'@SkepticTennis', text:'Sortie prématurée. Difficile de ne pas s\'inquiéter un peu.' },
+    { author:'@CircuitWatch', text:'Un tournoi à oublier vite, ça arrive à tout le monde sur le circuit.' },
+    { author:'@FanDuCircuit22', text:'Un mauvais tournoi ne fait pas une mauvaise carrière. Courage !' },
+    { author:'Radio Court Central', text:'"Il faudra vite rebondir après cette élimination précoce", commente le consultant.' },
+    { author:'@TabloidSport', text:'Encore une désillusion pour ce joueur, qui inquiète ses observateurs.' },
+  ],
+  rank_up: [
+    { author:'@CircuitWatch', text:'Belle progression au classement, la dynamique est la bonne.' },
+    { author:'@FanDuCircuit22', text:'Ça grimpe, ça grimpe ! Fier de suivre ce parcours.' },
+    { author:'L\'Équipe Tennis', text:'"Une saison qui confirme un vrai potentiel", écrit notre spécialiste.' },
+  ],
+  rank_down: [
+    { author:'@SkepticTennis', text:'Une chute au classement qui interroge sur la suite de la carrière.' },
+    { author:'@TabloidSport', text:'Le classement dévisse, les critiques commencent à arriver.' },
+    { author:'Radio Court Central', text:'"Cette baisse au classement doit servir d\'électrochoc", juge le consultant.' },
+  ],
+  injury: [
+    { author:'@CircuitWatch', text:'On pense fort à ce joueur après cette blessure, prompt rétablissement.' },
+    { author:'@SkepticTennis', text:'Encore une blessure. Le calendrier du circuit est vraiment trop chargé.' },
+    { author:'L\'Équipe Tennis', text:'"Une nouvelle blessure qui interroge sur la gestion physique", écrit la rédaction.' },
+  ],
+};
+const PRESS_RESPONSES = {
+  positive: [
+    { label:'Répondre avec le sourire', tag:'Communication', desc:'Vous partagez un message chaleureux.', moraleMod:5 },
+    { label:'Ignorer et savourer en privé', tag:'Discrétion', desc:'Vous préférez rester concentré.', moraleMod:2 },
+  ],
+  negative: [
+    { label:'Répondre calmement', tag:'Sang-froid', desc:'Vous choisissez des mots mesurés.', moraleMod:1 },
+    { label:'Ignorer complètement', tag:'Indifférence', desc:'Vous ne lisez même pas les commentaires.', moraleMod:-1 },
+    { label:'Se laisser atteindre', tag:'Doute', desc:'Ces mots vous restent en tête plus que prévu.', moraleMod:-5 },
+  ],
+  neutral: [
+    { label:'Prendre note', tag:'Recul', desc:'Vous gardez ce commentaire en tête, sans plus.', moraleMod:0 },
+    { label:'Partager un mot', tag:'Présence', desc:'Vous entretenez le lien avec vos suiveurs.', moraleMod:2 },
+  ],
+};
+function pickPressComment(p, category){
+  const key = 'usedPress_'+category;
+  if(!p[key]) p[key] = [];
+  const list = PRESS_COMMENTS[category] || PRESS_COMMENTS.early_exit;
+  let pool = list.filter((_,i)=>!p[key].includes(i));
+  if(!pool.length){ p[key] = []; pool = list; }
+  const chosen = choose(pool);
+  p[key].push(list.indexOf(chosen));
+  const tone = category==='title'||category==='rank_up' ? 'positive' : category==='semi_loss'||category==='rank_down' ? 'neutral' : 'negative';
+  return { comment: chosen, responses: PRESS_RESPONSES[tone] };
+}
+function pressCategoryFor(r){
+  if(r.injured) return 'injury';
+  if(r.champion) return 'title';
+  const rl = roundLabel(r.roundsWon, r.totalRounds);
+  if(rl==='finale') return 'final_loss';
+  if(rl==='demi-finale') return 'semi_loss';
+  return 'early_exit';
 }
 
 const FUNNY_EVENTS = [
@@ -638,6 +823,25 @@ const CALENDAR_OPTIONS = [
   { id:'intensif', tag:'Intensif', label:'Calendrier intensif', desc:'Beaucoup de petits tournois, plus de risques.' },
 ];
 
+/* ============ SCRIPTS DE COMPOSITION DE SAISON (rotation sans répétition immédiate) ============ */
+const SEASON_BUILD_SCRIPTS = [
+  p => `Votre entraîneur étale les brochures des tournois sur la table. "À vous de choisir la route, ${p.name.split(' ')[0]||p.name}." Classement actuel : #${p.rank}.`,
+  p => `Votre agent appelle : les organisateurs s'impatientent pour connaître votre programme. Le calendrier de la saison ${p.season} attend vos choix.`,
+  p => `Sur le tableau blanc du club, votre kiné a déjà noté une charge d'entraînement prudente. À vous d'ajuster le calendrier autour de son avis.`,
+  p => p.morale>=70 ? `En pleine confiance, vous discutez avec votre équipe d'un calendrier ambitieux pour cette saison ${p.season}.` : `Après une saison mouvementée, votre staff recommande de bien réfléchir au rythme à adopter.`,
+  p => p.injuries.length>0 ? `Le souvenir de vos pépins physiques plane encore. Composez un calendrier qui ménage votre corps, ou tentez le tout pour le tout.` : `Votre corps a bien tenu jusqu'ici. Profitez-en pour bâtir un calendrier ambitieux, ou restez prudent.`,
+  p => `Votre fédération vous transmet le calendrier international. Reste à décider où concentrer vos efforts, en fonction de votre style ${p.style.label.toLowerCase()}.`,
+  p => `Le sponsor principal glisse une suggestion : plus de visibilité, plus de tournois. À vous de composer votre saison en toute indépendance.`,
+];
+function seasonBuildIntro(p){
+  if(!p.usedSeasonScripts) p.usedSeasonScripts = [];
+  let pool = SEASON_BUILD_SCRIPTS.filter((_,i)=>!p.usedSeasonScripts.includes(i));
+  if(!pool.length){ p.usedSeasonScripts = []; pool = SEASON_BUILD_SCRIPTS; }
+  const idx = SEASON_BUILD_SCRIPTS.indexOf(choose(pool));
+  p.usedSeasonScripts.push(idx);
+  return SEASON_BUILD_SCRIPTS[idx](p);
+}
+
 /* ============ ÉTAT ============ */
 let player = null;
 let usedEvents = [];
@@ -645,6 +849,8 @@ let usedFunnyEvents = [];
 let usedSeriousEvents = [];
 let pendingEvent = null;
 let calendarChoice = null;
+let pendingGameplan = null;
+let pendingPress = null;
 
 function log(p, text){ p.journal.push({season:p.season, age:p.age, text}); }
 function injure(p, zone){
@@ -760,7 +966,8 @@ function advanceSeason(p){
     if(p.energy < 12 || run.idx >= run.queue.length){ finalizeSeason(p); return; }
     const item = run.queue[run.idx]; run.idx++;
     const totalRounds = TIERS[item.tier].points.length - 1;
-    run.current = { tier:item.tier, slamId:item.slamId, roundIndex:0, totalRounds, roundsWon:0, injuryBonus:0 };
+    const surface = item.tier==='slam' ? SLAM_SURFACE[item.slamId] : choose(SURFACES);
+    run.current = { tier:item.tier, slamId:item.slamId, roundIndex:0, totalRounds, roundsWon:0, injuryBonus:0, surface };
   }
   simulateRounds(p);
 }
@@ -770,7 +977,10 @@ function playRound(p, cur, tacticMod){
   const baseSkill = skillOf(p);
   const oppSkill = tier.baseOpp + cur.roundIndex*tier.oppInc + rand(-6,6);
   const eff = baseSkill + rand(-5,5) + 12;
-  const winProb = clamp(eff/(eff+oppSkill) + tacticMod, 0.02, 0.98);
+  const surface = matchSurface(cur);
+  const surfaceMod = styleSurfaceMod(p, surface) + nationSurfaceMod(p, surface);
+  const contextMod = surfaceMod + homeCrowdMod(p, cur) + seedingMod(p, cur);
+  const winProb = clamp(eff/(eff+oppSkill) + tacticMod + contextMod, 0.02, 0.98);
   const won = Math.random() < winProb;
   const roundCost = 2 + Math.floor(tier.energyCost / cur.totalRounds);
   p.energy = clamp(p.energy - roundCost, 0, 100);
@@ -783,6 +993,18 @@ function simulateRounds(p){
     const isSemi = cur.roundIndex === cur.totalRounds - 2;
     const isFinal = cur.roundIndex === cur.totalRounds - 1;
     if(isSemi || isFinal){
+      if(!cur.gameplanDone && isToughOpponent(p, cur)){
+        if(!p.usedGameplanEvents) p.usedGameplanEvents = [];
+        let pool = GAME_PLAN_EVENTS.filter((_,i)=>!p.usedGameplanEvents.includes(i));
+        if(!pool.length){ p.usedGameplanEvents = []; pool = GAME_PLAN_EVENTS; }
+        const ev = choose(pool);
+        p.usedGameplanEvents.push(GAME_PLAN_EVENTS.indexOf(ev));
+        pendingGameplan = ev;
+        p.phase = 'gameplan';
+        render();
+        return;
+      }
+      cur.gameplanDone = true;
       p.phase = 'match_choice';
       render();
       return;
@@ -799,7 +1021,9 @@ function resolveTactic(p, tacticId){
   const run = p.seasonRun; const cur = run.current;
   const t = (cur.tacticOptions || MATCH_TACTICS).find(x=>x.id===tacticId) || MATCH_TACTICS.find(x=>x.id===tacticId);
   cur.tacticOptions = null;
-  const won = playRound(p, cur, t.probMod);
+  const gpBonus = cur.gameplanBonus || 0;
+  cur.gameplanBonus = 0;
+  const won = playRound(p, cur, t.probMod + gpBonus);
   p.energy = clamp(p.energy - t.energyCostMod, 0, 100);
   cur.injuryBonus += t.injuryMod;
   if(!won){ finishTournament(p, false); return; }
@@ -819,7 +1043,7 @@ function finishTournament(p, champion){
     p.titles[cur.tier]++; run.titlesThisSeason.push(tournamentLabel(cur.tier, cur.slamId));
     if(cur.tier==='slam' && NATION_SLAM_ID[p.nation.id]===cur.slamId){ p.wonHomeSlam = true; }
   }
-  const res = { tier:cur.tier, slamId:cur.slamId, roundsWon:cur.roundsWon, totalRounds:cur.totalRounds, points, prize, champion };
+  const res = { tier:cur.tier, slamId:cur.slamId, roundsWon:cur.roundsWon, totalRounds:cur.totalRounds, points, prize, champion, surface:cur.surface };
   run.results.push(res);
   const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + cur.injuryBonus;
   let injured = false;
@@ -896,6 +1120,24 @@ function careerNarrative(p){
   else if(p.injuries.length===0){ parts.push('Un corps qui aura tenu bon, saison après saison.'); }
   return parts.join(' ');
 }
+/* ============ COMPARAISON DE CARRIÈRE ============ */
+const LEGENDARY_PLAYERS = [
+  { name:'Le Métronome', score:205, blurb:'8 titres du Grand Chelem, une régularité inégalée sur quinze saisons.' },
+  { name:'La Foudre', score:150, blurb:'Un jeu spectaculaire, 4 titres majeurs et un Numéro 1 mondial marquant.' },
+  { name:'Le Bâtisseur', score:95, blurb:'Une carrière construite pas à pas, couronnée d\'un Masters 1000 et d\'un top 10.' },
+  { name:'Le Combattant', score:55, blurb:'Jamais un titre majeur, mais quinze saisons pleines et un respect unanime.' },
+  { name:'L\'Espoir Discret', score:20, blurb:'Une poignée de titres modestes, une carrière honnête loin des sommets.' },
+];
+function careerComparison(p){
+  const score = legendScore(p);
+  const sorted = LEGENDARY_PLAYERS.slice().sort((a,b)=>b.score-a.score);
+  let above = sorted.filter(l=>score>=l.score);
+  let closest;
+  if(above.length){ closest = above[0]; }
+  else { closest = sorted[sorted.length-1]; }
+  return { score, closest, rankAmong: sorted.filter(l=>l.score>score).length + 1, total: sorted.length+1 };
+}
+
 function computeBadges(p){
   const b = [];
   if(p.titles.slam>=1) b.push({h:'Champion du Grand Chelem', d:'Vous avez soulevé un trophée majeur.'});
@@ -1196,22 +1438,61 @@ function renderStage(){
     }
     renderCalendarPhase();
 
+  } else if(p.phase === 'gameplan'){
+    const run = p.seasonRun; const cur = run.current;
+    const colors = tournamentColors(cur.tier, cur.slamId);
+    stage.style.background = colors.light;
+    const ev = pendingGameplan;
+    stage.innerHTML = `
+      <div class="tourn-banner" style="background:${colors.primary};">
+        <div class="tourn-banner-name">${tournamentLabel(cur.tier, cur.slamId)}</div>
+        <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId, cur.surface)}</div>
+      </div>
+      <div class="eyebrow" style="margin-top:14px;">Plan de jeu</div>
+      <div class="stage-h">${ev.title}</div>
+      <div class="stage-p">${ev.text}</div>
+      <div class="choices" id="gpWrap"></div>
+    `;
+    const wrap = document.getElementById('gpWrap');
+    ev.choices.forEach(c=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.style.borderLeft = `3px solid ${colors.primary}`;
+      btn.innerHTML = `<span class="tag" style="color:${colors.primary}">${c.tag}</span>${c.label}<span class="desc">${c.desc}</span>`;
+      btn.onclick = ()=>{
+        c.effect(p, cur);
+        cur.gameplanDone = true;
+        pendingGameplan = null;
+        p.phase = 'match_choice';
+        render();
+      };
+      wrap.appendChild(btn);
+    });
+
   } else if(p.phase === 'match_choice'){
     const run = p.seasonRun; const cur = run.current;
     const colors = tournamentColors(cur.tier, cur.slamId);
     stage.style.background = colors.light;
     const isFinal = cur.roundIndex === cur.totalRounds-1;
     const stageLabel = isFinal ? 'Finale' : 'Demi-finale';
+    if(!cur.script) cur.script = pickScript(p, isFinal?'final':'semi', isFinal?FINAL_SCRIPTS:SEMI_SCRIPTS);
+    const script = cur.script;
     const intro = choose(isFinal ? MATCH_INTROS_FINAL : MATCH_INTROS_SEMI);
+    const surface = matchSurface(cur);
+    const surfNote = (styleSurfaceMod(p,surface)+nationSurfaceMod(p,surface)) > 0.01
+      ? `Votre style ${p.style.label.toLowerCase()} est à l'aise sur cette surface.`
+      : (styleSurfaceMod(p,surface)+nationSurfaceMod(p,surface)) < -0.03
+        ? `Votre style ${p.style.label.toLowerCase()} est moins naturel sur cette surface.` : '';
+    const crowdNote = homeCrowdMod(p, cur) > 0 ? `Le public de ${p.nation.label} pousse dans votre dos.` : '';
     if(!cur.tacticOptions) cur.tacticOptions = pickTactics(3);
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
         <div class="tourn-banner-name">${tournamentLabel(cur.tier, cur.slamId)}</div>
-        <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId)}</div>
+        <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId, cur.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">${stageLabel}</div>
-      <div class="stage-h">Quelle tactique adopter ?</div>
-      <div class="stage-p"><i>${intro}</i><br>Forme : ${Math.round(p.energy)} · Mental : ${Math.round(p.stats.mental)}</div>
+      <div class="stage-h">${script.h}</div>
+      <div class="stage-p">${script.t}<br><i>${intro}</i><br>Forme : ${Math.round(p.energy)} · Mental : ${Math.round(p.stats.mental)}${surfNote?'<br>'+surfNote:''}${crowdNote?'<br>'+crowdNote:''}</div>
       <div class="choices" id="tacticWrap"></div>
     `;
     const wrap = document.getElementById('tacticWrap');
@@ -1220,7 +1501,7 @@ function renderStage(){
       btn.className = 'choice';
       btn.style.borderLeft = `3px solid ${colors.primary}`;
       btn.innerHTML = `<span class="tag" style="color:${colors.primary}">${t.tag}</span>${t.label}<span class="desc">${t.desc}</span>`;
-      btn.onclick = ()=>{ resolveTactic(p, t.id); };
+      btn.onclick = ()=>{ cur.script = null; resolveTactic(p, t.id); };
       wrap.appendChild(btn);
     });
 
@@ -1232,7 +1513,7 @@ function renderStage(){
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
         <div class="tourn-banner-name">${tournamentLabel(r.tier, r.slamId)}</div>
-        <div class="tourn-banner-sub">${tournamentSurface(r.tier, r.slamId)}</div>
+        <div class="tourn-banner-sub">${tournamentSurface(r.tier, r.slamId, r.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">Résultat</div>
       <div class="stage-h">${rl}</div>
@@ -1241,7 +1522,40 @@ function renderStage(){
       ${r.injured ? '<div class="recap-row"><span class="l">Incident</span><span class="r bad">Blessure en fin de tournoi</span></div>' : ''}
       <div class="actions"><button class="btn" id="contTournBtn">Continuer</button></div>
     `;
-    document.getElementById('contTournBtn').onclick = ()=>{ advanceSeason(p); };
+    document.getElementById('contTournBtn').onclick = ()=>{
+      const category = pressCategoryFor(r);
+      const forceShow = category==='title' || category==='injury' || category==='final_loss';
+      if(forceShow || rand(1,100)<=55){
+        pendingPress = pickPressComment(p, category);
+        p.phase = 'press';
+      } else {
+        advanceSeason(p);
+        return;
+      }
+      render();
+    };
+
+  } else if(p.phase === 'press'){
+    stage.style.background = '';
+    const pr = pendingPress;
+    stage.innerHTML = `
+      <div class="eyebrow">Presse & réseaux sociaux</div>
+      <div class="stage-h">${pr.comment.author}</div>
+      <div class="stage-p" style="font-style:italic;">"${pr.comment.text}"</div>
+      <div class="choices" id="pressWrap"></div>
+    `;
+    const wrap = document.getElementById('pressWrap');
+    pr.responses.forEach(resp=>{
+      const btn = document.createElement('button');
+      btn.className = 'choice';
+      btn.innerHTML = `<span class="tag">${resp.tag}</span>${resp.label}<span class="desc">${resp.desc}</span>`;
+      btn.onclick = ()=>{
+        p.morale = clamp(p.morale + resp.moraleMod, 0, 100);
+        pendingPress = null;
+        advanceSeason(p);
+      };
+      wrap.appendChild(btn);
+    });
 
   } else if(p.phase === 'recap'){
     stage.style.background = '';
@@ -1290,10 +1604,11 @@ function renderCalendarPhase(){
   const p = player;
   if(!calendarChoice) calendarChoice = { intensity:'standard', slams:{}, masters:0 };
   const stage = document.getElementById('stage');
+  if(!calendarChoice.introText) calendarChoice.introText = seasonBuildIntro(p);
   stage.innerHTML = `
     <div class="eyebrow">Saison ${p.season}</div>
     <div class="stage-h">Composez votre saison</div>
-    <div class="stage-p">Classement actuel : #${p.rank}. Choisissez le rythme des petits tournois, puis ajoutez les grands rendez-vous que vous voulez disputer — chacun rallonge la saison.
+    <div class="stage-p"><i>${calendarChoice.introText}</i><br>Choisissez le rythme des petits tournois, puis ajoutez les grands rendez-vous que vous voulez disputer — chacun rallonge la saison.
     ${p.slamEligible ? '' : `<br><span style="color:var(--muted);">Le Grand Chelem se débloque sous le rang #${SLAM_ELIGIBLE_RANK}.</span>`}</div>
     <div class="eyebrow" style="margin-top:6px;">Calendrier de base</div>
     <div class="choices" id="calWrap"></div>
@@ -1353,6 +1668,7 @@ function renderEnd(){
   const score = legendScore(p);
   const rating = legendRating(score);
   const badges = computeBadges(p);
+  const comparison = careerComparison(p);
   const totalTitles = Object.values(p.titles).reduce((a,b)=>a+b,0);
 
   app.innerHTML = `
@@ -1392,6 +1708,11 @@ function renderEnd(){
 
       <div class="eyebrow" style="margin-top:20px;">Badges</div>
       <div class="badges">${badges.map(b=>`<div class="badge"><div class="h">${b.h}</div><div class="d">${b.d}</div></div>`).join('')}</div>
+
+      <div class="eyebrow" style="margin-top:20px;">Comparaison de carrière</div>
+      <div class="stage-p">Sur l'échelle des grandes carrières du circuit (${comparison.rankAmong}ᵉ position sur ${comparison.total}), votre score de ${comparison.score} points vous rapproche le plus de <b>${comparison.closest.name}</b> : ${comparison.closest.blurb}</div>
+      <div class="recap-row"><span class="l">${comparison.closest.name}</span><span class="r">${comparison.closest.score} pts</span></div>
+      <div class="recap-row"><span class="l">${p.name}</span><span class="r good">${comparison.score} pts</span></div>
 
       <div class="actions"><button class="btn" onclick="player=null; render()">Rejouer une carrière</button></div>
     </div>
