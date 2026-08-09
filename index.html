@@ -29,7 +29,9 @@ body{
   padding:24px 16px 60px;
   background-image:
     radial-gradient(circle at 100% 0%, rgba(207,234,62,0.16), transparent 45%),
-    radial-gradient(circle at 0% 100%, rgba(21,52,82,0.05), transparent 40%);
+    radial-gradient(circle at 0% 100%, rgba(21,52,82,0.05), transparent 40%),
+    repeating-linear-gradient(115deg, rgba(21,52,82,0.05) 0px, rgba(21,52,82,0.05) 2px, transparent 2px, transparent 140px),
+    repeating-linear-gradient(25deg, rgba(21,52,82,0.045) 0px, rgba(21,52,82,0.045) 2px, transparent 2px, transparent 160px);
 }
 h1,h2,h3,.heading{font-family:'Poppins', sans-serif;}
 .mono{font-family:'Space Mono', monospace;}
@@ -874,9 +876,12 @@ const EVENTS = [
 ];
 
 const CALENDAR_OPTIONS = [
-  { id:'leger', tag:'Léger', label:'Calendrier léger', desc:'Peu de petits tournois, corps préservé.' },
-  { id:'standard', tag:'Standard', label:'Calendrier standard', desc:'Un rythme classique, équilibré.' },
-  { id:'intensif', tag:'Intensif', label:'Calendrier intensif', desc:'Beaucoup de petits tournois, plus de risques.' },
+  { id:'minimal', tag:'Minimal', label:'Calendrier minimal', desc:'Le strict nécessaire, corps ménagé au maximum.', mult:0.35, energyMod:6, injuryMod:-1 },
+  { id:'leger', tag:'Léger', label:'Calendrier léger', desc:'Peu de petits tournois, corps préservé.', mult:0.55, energyMod:3, injuryMod:-0.5 },
+  { id:'standard', tag:'Standard', label:'Calendrier standard', desc:'Un rythme classique, équilibré.', mult:1, energyMod:0, injuryMod:0 },
+  { id:'soutenu', tag:'Soutenu', label:'Calendrier soutenu', desc:'Un cran au-dessus du rythme classique, pour gratter des points.', mult:1.3, energyMod:-2, injuryMod:0.5 },
+  { id:'intensif', tag:'Intensif', label:'Calendrier intensif', desc:'Beaucoup de petits tournois, plus de risques.', mult:1.6, energyMod:-4, injuryMod:1 },
+  { id:'marathon', tag:'Marathon', label:'Calendrier marathon', desc:'Un enchaînement extrême, pour ceux qui visent le sommet coûte que coûte.', mult:2, energyMod:-7, injuryMod:2 },
 ];
 
 /* ============ SCRIPTS DE COMPOSITION DE SAISON (rotation sans répétition immédiate) ============ */
@@ -974,7 +979,8 @@ function newPlayer(){
 
 /* ============ CALENDRIER DE BASE (petits tournois) ============ */
 function planSeason(rank, intensityId, age){
-  const mult = intensityId==='leger' ? 0.55 : intensityId==='intensif' ? 1.6 : 1;
+  const opt = CALENDAR_OPTIONS.find(c=>c.id===intensityId) || CALENDAR_OPTIONS.find(c=>c.id==='standard');
+  const mult = opt.mult;
   const fill = (tier,n) => Array(Math.max(0, Math.round(n*mult))).fill(tier);
   let plan = [];
   if(age>=21){
@@ -1047,6 +1053,8 @@ function startSeason(p, choice){
   p.seasonRun = {
     queue, idx:0, results:[], seasonPoints:0, seasonPrize:0, titlesThisSeason:[], stopped:false,
     current:null, intensityLabel: CALENDAR_OPTIONS.find(c=>c.id===choice.intensity).label, modBonus,
+    energyMod: (CALENDAR_OPTIONS.find(c=>c.id===choice.intensity)||{}).energyMod || 0,
+    injuryMod: (CALENDAR_OPTIONS.find(c=>c.id===choice.intensity)||{}).injuryMod || 0,
   };
   advanceSeason(p);
 }
@@ -1073,7 +1081,7 @@ function playRound(p, cur, tacticMod){
   const contextMod = surfaceMod + homeCrowdMod(p, cur) + seedingMod(p, cur) + (p.seasonRun ? p.seasonRun.modBonus||0 : 0);
   const winProb = clamp(eff/(eff+oppSkill) + tacticMod + contextMod, 0.02, 0.98);
   const won = Math.random() < winProb;
-  const roundCost = 2 + Math.floor(tier.energyCost / cur.totalRounds);
+  const roundCost = 2 + Math.floor(tier.energyCost / cur.totalRounds) - (p.seasonRun ? Math.round((p.seasonRun.energyMod||0)/3) : 0);
   p.energy = clamp(p.energy - roundCost, 0, 100);
   return won;
 }
@@ -1136,7 +1144,7 @@ function finishTournament(p, champion){
   }
   const res = { tier:cur.tier, slamId:cur.slamId, roundsWon:cur.roundsWon, totalRounds:cur.totalRounds, points, prize, champion, surface:cur.surface };
   run.results.push(res);
-  const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + cur.injuryBonus;
+  const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + cur.injuryBonus + (run.injuryMod||0);
   let injured = false;
   if(rand(1,100) <= injuryChance){ injure(p, choose(['cheville','genou','épaule','dos','poignet'])); injured = true; run.stopped = true; }
   run.current = null;
@@ -1691,6 +1699,20 @@ function renderStage(){
   }
 }
 
+function autoCalendar(p){
+  // choix cohérent selon le classement, l'âge et le moral du joueur, pour éviter de tout composer à la main
+  let intensity;
+  if(p.age>=32 || p.morale<35) intensity='leger';
+  else if(p.rank>600) intensity='soutenu';
+  else if(p.rank>250) intensity='standard';
+  else if(p.energy<40) intensity='leger';
+  else intensity = choose(['standard','soutenu']);
+  const slams = {};
+  if(p.slamEligible){ SLAMS.forEach(s=>{ slams[s.id] = p.rank<=120 ? true : Math.random()<0.6; }); }
+  const masters = p.slamEligible ? (p.rank<=80 ? 4 : rand(1,3)) : rand(0,2);
+  return { intensity, slams, masters };
+}
+
 function renderCalendarPhase(){
   const p = player;
   if(!calendarChoice) calendarChoice = { intensity:'standard', slams:{}, masters:0 };
@@ -1716,7 +1738,10 @@ function renderCalendarPhase(){
     <div class="eyebrow" style="margin-top:18px;">Grands tournois</div>
     <div class="opt-grid" id="bigWrap"></div>
     ${p.age>=30 ? '<div style="margin-top:16px;"><button class="btn danger" id="retireBtn">Annoncer votre retraite</button></div>' : ''}
-    <div class="actions"><button class="btn" id="launchSeasonBtn">Lancer la saison</button></div>
+    <div class="actions">
+      <button class="btn outline" id="autoCalBtn">${SPARK_ICON(16)} Calendrier auto</button>
+      <button class="btn" id="launchSeasonBtn">Lancer la saison</button>
+    </div>
   `;
 
   const calWrap = document.getElementById('calWrap');
@@ -1758,6 +1783,15 @@ function renderCalendarPhase(){
   if(retireBtn){ retireBtn.onclick = ()=>{ p.retired = true; render(); }; }
 
   document.getElementById('launchSeasonBtn').onclick = ()=>{
+    const choice = calendarChoice;
+    calendarChoice = null;
+    startSeason(p, choice);
+  };
+  document.getElementById('autoCalBtn').onclick = ()=>{
+    const auto = autoCalendar(p);
+    calendarChoice.intensity = auto.intensity;
+    calendarChoice.slams = auto.slams;
+    calendarChoice.masters = auto.masters;
     const choice = calendarChoice;
     calendarChoice = null;
     startSeason(p, choice);
