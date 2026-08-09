@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&family=Space+Mono:wght@600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* Ambiance Roland-Garros : terre battue, lignes blanches, vert filet */
+  /* Ambiance Grand Chelem français : terre battue, lignes blanches, vert filet */
   --bg:#F2DFC7;
   --surface:#FFFCF7;
   --ink:#3B2415;
@@ -320,6 +320,8 @@ img,svg,canvas{max-width:100%}
 .player-name{letter-spacing:-.2px;}
 @media(max-width:740px){.side-athlete{min-height:175px}.leaderboard-row{grid-template-columns:30px minmax(0,1fr) 68px;}}
 
+
+.flag-badge,.host-flag{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle}.host-flag{font-size:1.05em;line-height:1;margin-right:2px}
 </style>
 </head>
 <body>
@@ -503,14 +505,12 @@ const CROWD_ICON = (size=28, color='#647B6C') => `<svg width="${size}" height="$
 <circle cx="20" cy="11" r="5" fill="${color}"/><path d="M12 30c0-7 5-11 8-11s8 4 8 11" fill="${color}"/>
 <circle cx="32" cy="14" r="4" fill="${color}" opacity=".6"/><path d="M26 30c0-6 4-9 6-9s6 3 6 9" fill="${color}" opacity=".6"/>
 </svg>`;
+const FLAG_BY_NATION = { fr:'🇫🇷', uk:'🇬🇧', us:'🇺🇸', au:'🇦🇺', es:'🇪🇸', sr:'🇷🇸', ar:'🇦🇷', ma:'🇲🇦', jp:'🇯🇵', it:'🇮🇹' };
 function nationBadge(nation, size=22){
-  const key = nation.surfaceAff==='clay' ? '#B4552A' : nation.surfaceAff==='grass' ? '#1B5E3A' : '#3D6A8C';
-  const initials = nation.label.slice(0,2).toUpperCase();
-  return `<svg width="${size}" height="${size}" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-<circle cx="20" cy="20" r="18" fill="${key}"/>
-<text x="20" y="26" font-size="14" fill="#fff" text-anchor="middle" font-family="Poppins, Arial" font-weight="700">${initials}</text>
-</svg>`;
+  const flag = FLAG_BY_NATION[nation.id] || '🌍';
+  return `<span class="flag-badge" style="font-size:${Math.round(size*0.9)}px;line-height:1;display:inline-flex;align-items:center;justify-content:center;width:${size}px;height:${size}px;" aria-label="${nation.label}">${flag}</span>`;
 }
+function hostFlag(slam){ return `<span class="host-flag" title="Pays hôte : ${slam.host}">${slam.flag}</span>`; }
 
 const SLAM_ELIGIBLE_RANK = 200;
 const NATION_SLAM_ID = { fr:'rg', uk:'wim', us:'uso', au:'ao' };
@@ -604,10 +604,10 @@ function seedingMod(p, cur){
 
 /* ============ DONNÉES ============ */
 const NATIONS = [
-  { id:'fr', label:'France', slam:'Roland-Garros' },
-  { id:'uk', label:'Angleterre', slam:'Wimbledon' },
-  { id:'us', label:'États-Unis', slam:'US Open' },
-  { id:'au', label:'Australie', slam:'Open d\'Australie' },
+  { id:'fr', label:'France', slam:'Grand Chelem français' },
+  { id:'uk', label:'Royaume-Uni', slam:'Grand Chelem britannique' },
+  { id:'us', label:'États-Unis', slam:'Grand Chelem américain' },
+  { id:'au', label:'Australie', slam:'Grand Chelem australien' },
   { id:'es', label:'Espagne', slam:null },
   { id:'sr', label:'Serbie', slam:null },
   { id:'ar', label:'Argentine', slam:null },
@@ -639,10 +639,10 @@ const TIERS = {
 
 /* Identité et couleurs des 4 levées du Grand Chelem, par surface */
 const SLAMS = [
-  { id:'ao', label:'Open d\'Australie', surface:'Dur', place:'Melbourne', colors:{ primary:'#1B4B8C', light:'#EAF2FB', accent:'#4F8FDB' } },
-  { id:'rg', label:'Roland-Garros', surface:'Terre battue', place:'Paris', colors:{ primary:'#C1592A', light:'#FBEEE3', accent:'#E0895A' } },
-  { id:'wim', label:'Wimbledon', surface:'Gazon', place:'Londres', colors:{ primary:'#1B5E3A', light:'#E7F3EB', accent:'#4C9268' } },
-  { id:'uso', label:'US Open', surface:'Dur', place:'New York', colors:{ primary:'#25348C', light:'#EAEBFB', accent:'#5566C7' } },
+  { id:'ao', label:'Grand Chelem australien', short:'Majeur australien', host:'Australie', flag:'🇦🇺', surface:'Dur', place:'Australie', colors:{ primary:'#1B4B8C', light:'#EAF2FB', accent:'#4F8FDB' } },
+  { id:'rg', label:'Grand Chelem français', short:'Majeur français', host:'France', flag:'🇫🇷', surface:'Terre battue', place:'France', colors:{ primary:'#C1592A', light:'#FBEEE3', accent:'#E0895A' } },
+  { id:'wim', label:'Grand Chelem britannique', short:'Majeur britannique', host:'Royaume-Uni', flag:'🇬🇧', surface:'Gazon', place:'Royaume-Uni', colors:{ primary:'#1B5E3A', light:'#E7F3EB', accent:'#4C9268' } },
+  { id:'uso', label:'Grand Chelem américain', short:'Majeur américain', host:'États-Unis', flag:'🇺🇸', surface:'Dur', place:'États-Unis', colors:{ primary:'#25348C', light:'#EAEBFB', accent:'#5566C7' } },
 ];
 
 /* Couleurs par défaut pour les autres catégories de tournois */
@@ -662,10 +662,14 @@ function tournamentLabel(tierId, slamId, circuit='hommes'){
   return circuitTierLabel(tierId, circuit);
 }
 function tournamentSurface(tierId, slamId, surface){
-  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return s.surface + ' · ' + s.place; }
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return `${s.surface} · ${s.place}`; }
   const surfLabel = surface ? SURFACE_LABELS[surface] : null;
   if(tierId==='masters') return surfLabel ? `${surfLabel} · Grand rendez-vous du circuit` : 'Grand rendez-vous du circuit';
   return surfLabel ? `${surfLabel} · Circuit international` : 'Circuit international';
+}
+function tournamentHeaderLabel(tierId, slamId, circuit='hommes'){
+  if(tierId==='slam'){ const s = SLAMS.find(x=>x.id===slamId) || SLAMS[0]; return `${hostFlag(s)} ${s.label}`; }
+  return circuitTierLabel(tierId, circuit);
 }
 
 /* ============ GAME PLAN — préparation face à un adversaire coriace ============ */
@@ -1894,7 +1898,7 @@ function renderStage(){
     const ev = pendingGameplan;
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
-        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentLabel(cur.tier, cur.slamId, p.circuit)}</div>
+        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentHeaderLabel(cur.tier, cur.slamId, p.circuit)}</div>
         <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId, cur.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">Plan de jeu</div>
@@ -1938,7 +1942,7 @@ function renderStage(){
     if(!cur.tacticOptions) cur.tacticOptions = pickTactics(3);
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
-        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentLabel(cur.tier, cur.slamId, p.circuit)}</div>
+        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentHeaderLabel(cur.tier, cur.slamId, p.circuit)}</div>
         <div class="tourn-banner-sub">${tournamentSurface(cur.tier, cur.slamId, cur.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">${stageLabel}</div>
@@ -1965,7 +1969,7 @@ function renderStage(){
     const rl = roundLabel(r.roundsWon, r.totalRounds);
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
-        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentLabel(r.tier, r.slamId, p.circuit)}</div>
+        <div class="tourn-banner-name" style="display:flex;align-items:center;gap:8px;">${RACKET_ICON(18,'#fff')}${tournamentHeaderLabel(r.tier, r.slamId, p.circuit)}</div>
         <div class="tourn-banner-sub">${tournamentSurface(r.tier, r.slamId, r.surface)}</div>
       </div>
       <div class="eyebrow" style="margin-top:14px;">Résultat</div>
@@ -2019,7 +2023,7 @@ function renderStage(){
       resultsHtml = '<div class="results">' + r.results.map(res=>{
         const rl = roundLabel(res.roundsWon, res.totalRounds);
         const colors = tournamentColors(res.tier, res.slamId);
-        return `<div class="result ${res.champion?'title':''}" style="border-left-color:${colors.primary}"><span>${tournamentLabel(res.tier, res.slamId, p.circuit)}</span><span>${rl}</span></div>`;
+        return `<div class="result ${res.champion?'title':''}" style="border-left-color:${colors.primary}"><span>${tournamentHeaderLabel(res.tier, res.slamId, p.circuit)}</span><span>${rl}</span></div>`;
       }).join('') + '</div>';
     }
     stage.innerHTML = `
@@ -2052,7 +2056,7 @@ function renderStage(){
       <div class="qualif-banner">
         <div class="qualif-trophy">${TROPHY_ICON(60)}</div>
         <div class="qualif-title">Qualifié pour le Grand Chelem !</div>
-        <div class="qualif-text">Classé #${p.rank}, ${p.name} peut désormais s'inscrire aux quatre levées du Grand Chelem : Open d'Australie, Roland-Garros, Wimbledon et US Open.</div>
+        <div class="qualif-text">Classé #${p.rank}, ${p.name} peut désormais s'inscrire aux quatre levées du Grand Chelem : Grand Chelem australien, Grand Chelem français, Grand Chelem britannique et Grand Chelem américain.</div>
       </div>
       <div class="actions"><button class="btn" id="contQualifBtn">Continuer</button></div>
     `;
@@ -2145,8 +2149,8 @@ function renderCalendarPhase(){
       d.className = 'opt' + (sel ? ' sel' : '') + (locked ? ' locked' : '');
       d.style.borderLeft = `4px solid ${locked ? '#C7D0C4' : s.colors.primary}`;
       d.innerHTML = locked
-        ? `<div class="h">${s.label} 🔒</div><div class="d">Débloqué sous le rang #${SLAM_ELIGIBLE_RANK}</div>`
-        : `<div class="h">${s.label}</div><div class="d">${s.surface} · ${s.place}</div>`;
+        ? `<div class="h">${hostFlag(s)} ${s.label} 🔒</div><div class="d">Débloqué sous le rang #${SLAM_ELIGIBLE_RANK}</div>`
+        : `<div class="h">${hostFlag(s)} ${s.label}</div><div class="d">${s.surface} · ${s.place}</div>`;
       if(!locked){ d.onclick = ()=>{ calendarChoice.slams[s.id] = !calendarChoice.slams[s.id]; renderCalendarPhase(); }; }
       bigWrap.appendChild(d);
     });
