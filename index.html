@@ -235,9 +235,34 @@ img,svg,canvas{max-width:100%}
 
 
 .choice.sel{border-color:var(--ball-dark); background:#F4FADF;}
-.tourn-banner{padding:14px 16px;border-radius:12px;color:#fff;}
+.tourn-banner{padding:14px 16px;border-radius:12px;color:#fff; position:relative; overflow:hidden;}
+.tourn-banner::after{content:"";position:absolute;right:-20px;top:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.12);}
 .tourn-banner-name{font-family:'Poppins',sans-serif;font-weight:700;font-size:16px;}
 .tourn-banner-sub{font-size:12px;opacity:.85;margin-top:2px;}
+
+.opt.locked{opacity:.55; cursor:not-allowed; background:#F2F4EF;}
+.opt.locked .h{color:var(--muted);}
+
+.qualif-banner{
+  text-align:center; padding:30px 16px; border-radius:16px;
+  background:linear-gradient(180deg, #FBF4E4, var(--surface));
+  border:1px solid var(--line);
+  position:relative; overflow:hidden;
+}
+.qualif-banner::before{
+  content:"";
+  position:absolute; inset:0;
+  background-image:radial-gradient(rgba(217,164,65,0.25) 2px, transparent 2px);
+  background-size:22px 22px;
+  opacity:.5;
+}
+.qualif-trophy{position:relative;margin-bottom:10px;}
+.qualif-title{position:relative; font-family:'Poppins',sans-serif; font-weight:800; font-size:22px; color:var(--net); margin-bottom:8px;}
+.qualif-text{position:relative; font-size:14.5px; color:#37493D; max-width:440px; margin:0 auto; line-height:1.55;}
+
+.rating{position:relative; overflow:hidden;}
+.rating .rating-bg{position:absolute; top:-10px; right:-10px; opacity:.16;}
+.hero-illustration{display:flex; justify-content:center; margin-bottom:26px;}
 </style>
 </head>
 <body>
@@ -255,6 +280,30 @@ const BALL_ICON = (size=28) => `<svg class="icon-ball" width="${size}" height="$
 <path d="M4 12C10 18 10 22 4 28" stroke="#132A1D" stroke-width="1.5" fill="none"/>
 <path d="M36 12C30 18 30 22 36 28" stroke="#132A1D" stroke-width="1.5" fill="none"/>
 </svg>`;
+
+const TROPHY_ICON = (size=56, color='#D9A441') => `<svg width="${size}" height="${size}" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+<path d="M18 10h28v8c0 9-6 15-14 15S18 27 18 18v-8z" fill="${color}" stroke="#132A1D" stroke-width="1.5"/>
+<path d="M18 13H9c0 8 4 12 10 13" fill="none" stroke="${color}" stroke-width="3"/>
+<path d="M46 13h9c0 8-4 12-10 13" fill="none" stroke="${color}" stroke-width="3"/>
+<rect x="28" y="33" width="8" height="10" fill="${color}" stroke="#132A1D" stroke-width="1.5"/>
+<path d="M20 50c0-4 5-7 12-7s12 3 12 7v3H20v-3z" fill="${color}" stroke="#132A1D" stroke-width="1.5"/>
+</svg>`;
+
+const COURT_ILLUSTRATION = (w=520,h=280) => `<svg width="${w}" height="${h}" viewBox="0 0 520 280" xmlns="http://www.w3.org/2000/svg">
+<rect x="4" y="4" width="512" height="272" rx="14" fill="#1B5E3A"/>
+<rect x="24" y="24" width="472" height="232" fill="none" stroke="#F3F8F0" stroke-width="3"/>
+<line x1="24" y1="140" x2="496" y2="140" stroke="#F3F8F0" stroke-width="3"/>
+<line x1="130" y1="24" x2="130" y2="256" stroke="#F3F8F0" stroke-width="2"/>
+<line x1="390" y1="24" x2="390" y2="256" stroke="#F3F8F0" stroke-width="2"/>
+<line x1="130" y1="70" x2="390" y2="70" stroke="#F3F8F0" stroke-width="2"/>
+<line x1="130" y1="210" x2="390" y2="210" stroke="#F3F8F0" stroke-width="2"/>
+<line x1="260" y1="70" x2="260" y2="210" stroke="#F3F8F0" stroke-width="2"/>
+<line x1="260" y1="20" x2="260" y2="260" stroke="#153452" stroke-width="4" stroke-dasharray="2 6"/>
+<circle cx="260" cy="140" r="11" fill="#CFEA3E" stroke="#132A1D" stroke-width="1.5"/>
+</svg>`;
+
+const SLAM_ELIGIBLE_RANK = 200;
+const NATION_SLAM_ID = { fr:'rg', uk:'wim', us:'uso', au:'ao' };
 
 /* ============ DONNÉES ============ */
 const NATIONS = [
@@ -321,12 +370,41 @@ function tournamentSurface(tierId, slamId){
   return 'Circuit international';
 }
 
-/* Tactiques disponibles en demi-finale et en finale */
+/* Tactiques disponibles en demi-finale et en finale — un pool large, 3 proposées à chaque fois */
 const MATCH_TACTICS = [
   { id:'prudent', label:'Jouer serré', tag:'Prudence', desc:'Moins de prises de risques, vous économisez des forces.', probMod:-0.06, energyCostMod:-3, injuryMod:-1 },
   { id:'normal', label:'Garder votre plan de jeu', tag:'Équilibre', desc:'Vous restez fidèle à vos habitudes.', probMod:0, energyCostMod:0, injuryMod:0 },
   { id:'agressif', label:'Tout risquer', tag:'Audace', desc:'Plus de chances si ça passe, mais fatigue et risques accrus.', probMod:0.09, energyCostMod:5, injuryMod:2 },
+  { id:'service', label:'Miser sur le service', tag:'Puissance', desc:'Vous cherchez l\'ace, au prix de plus de doubles fautes.', probMod:0.05, energyCostMod:2, injuryMod:0 },
+  { id:'filet', label:'Monter au filet', tag:'Initiative', desc:'Vous raccourcissez les points, mais l\'adversaire peut vous passer.', probMod:0.04, energyCostMod:4, injuryMod:1 },
+  { id:'patience', label:'Faire durer l\'échange', tag:'Endurance', desc:'Vous usez l\'adversaire, au prix de vos jambes.', probMod:-0.02, energyCostMod:3, injuryMod:0 },
+  { id:'mental', label:'Jouer sur le mental de l\'adversaire', tag:'Pression', desc:'Vous changez de rythme pour le déstabiliser.', probMod:0.03, energyCostMod:1, injuryMod:0 },
+  { id:'sur_mesure', label:'Casser vos habitudes', tag:'Surprise', desc:'Un plan inhabituel, imprévisible pour vous comme pour lui.', probMod:0.02, energyCostMod:0, injuryMod:1 },
 ];
+
+/* Phrases d'ambiance tirées au hasard avant chaque grand match, pour ne jamais répéter la même mise en scène */
+const MATCH_INTROS_SEMI = [
+  'La foule retient son souffle avant l\'entrée sur le court.',
+  'Votre adversaire s\'échauffe déjà, concentré, silencieux.',
+  'Le speaker annonce les deux noms. C\'est à vous de jouer.',
+  'Une petite pluie fine vient de s\'arrêter, le court est encore humide.',
+  'Vos jambes sont lourdes, mais votre tête est prête.',
+  'Le public est acquis à votre adversaire, ici, sur ses terres.',
+  'Vous avez étudié son jeu toute la semaine. Le moment est venu.',
+  'Un vent léger traverse le court, imprévisible sur les balles hautes.',
+];
+const MATCH_INTROS_FINAL = [
+  'Le court est plein. La finale peut commencer.',
+  'Vous n\'avez plus qu\'un adversaire entre vous et le titre.',
+  'Les caméras sont braquées sur le court central.',
+  'Votre coach vous fait un dernier signe depuis les tribunes.',
+  'Une chaleur lourde s\'installe sur le court en ce jour de finale.',
+  'Le silence avant la première balle est presque assourdissant.',
+  'Tout ce que vous avez construit cette saison se joue maintenant.',
+  'L\'arbitre appelle les deux joueurs. Dernière ligne droite.',
+];
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=rand(0,i); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function pickTactics(n=3){ return shuffle(MATCH_TACTICS).slice(0,n); }
 
 const RANK_BANDS = [
   [9200, 1], [7500, 5], [6000, 12], [4600, 22], [3400, 40],
@@ -594,6 +672,7 @@ function newPlayer(){
     bestRank:1400, sponsors:0, injuries:[], seasonsPlayed:0,
     journal:[], phase:'event', retired:false, forcedRetire:false, skipSeason:false,
     lastRecap:null, lastDecisionGain:null, lastTournamentResult:null, seasonRun:null,
+    slamEligible:false, pendingSlamQualified:false, wonHomeSlam:false,
   };
 }
 
@@ -718,7 +797,8 @@ function simulateRounds(p){
 
 function resolveTactic(p, tacticId){
   const run = p.seasonRun; const cur = run.current;
-  const t = MATCH_TACTICS.find(x=>x.id===tacticId);
+  const t = (cur.tacticOptions || MATCH_TACTICS).find(x=>x.id===tacticId) || MATCH_TACTICS.find(x=>x.id===tacticId);
+  cur.tacticOptions = null;
   const won = playRound(p, cur, t.probMod);
   p.energy = clamp(p.energy - t.energyCostMod, 0, 100);
   cur.injuryBonus += t.injuryMod;
@@ -735,7 +815,10 @@ function finishTournament(p, champion){
   const prize = tier.prize[cur.roundsWon];
   run.seasonPoints += points;
   run.seasonPrize += prize;
-  if(champion){ p.titles[cur.tier]++; run.titlesThisSeason.push(tournamentLabel(cur.tier, cur.slamId)); }
+  if(champion){
+    p.titles[cur.tier]++; run.titlesThisSeason.push(tournamentLabel(cur.tier, cur.slamId));
+    if(cur.tier==='slam' && NATION_SLAM_ID[p.nation.id]===cur.slamId){ p.wonHomeSlam = true; }
+  }
   const res = { tier:cur.tier, slamId:cur.slamId, roundsWon:cur.roundsWon, totalRounds:cur.totalRounds, points, prize, champion };
   run.results.push(res);
   const injuryChance = 1.5 + (100-p.stats.physique)*0.10 + (100-p.energy)*0.08 + cur.injuryBonus;
@@ -754,6 +837,7 @@ function finalizeSeason(p){
   p.prevRank = p.rank;
   p.rank = pointsToRank(p.points);
   if(p.rank < p.bestRank) p.bestRank = p.rank;
+  if(!p.slamEligible && p.rank <= SLAM_ELIGIBLE_RANK){ p.slamEligible = true; p.pendingSlamQualified = true; }
   p.seasonsPlayed++;
   p.energy = clamp(p.energy + 55, 0, 100);
   p.morale = clamp(p.morale + (p.morale<55 ? 8 : 2), 0, 100);
@@ -782,13 +866,35 @@ function legendScore(p){
   score -= p.injuries.length*4;
   return Math.max(0, Math.round(score));
 }
+const RATING_FLAVORS = {
+  S: ['Une carrière hors normes.', 'Un nom que le circuit n\'oubliera pas.', 'L\'histoire du tennis retiendra ce nom.'],
+  A: ['Un grand nom du circuit.', 'Une carrière de tout premier plan.', 'Le genre de parcours qu\'on raconte encore.'],
+  B: ['Une très belle carrière.', 'Un parcours solide et respecté.', 'De quoi être fier, saison après saison.'],
+  C: ['Une carrière solide sur le circuit.', 'Un professionnel du circuit, sans éclat majeur.', 'Un parcours honnête, fait de hauts et de bas.'],
+  D: ['Modeste, mais un rêve vécu.', 'Peu de trophées, mais une vraie aventure.', 'Le circuit vous aura appris beaucoup.'],
+  E: ['Le circuit ne vous aura pas gardé.', 'Une carrière écourtée, sans grand résultat.', 'Le rêve était là, les résultats moins.'],
+};
 function legendRating(score){
-  if(score>=180) return {letter:'S', flavor:'Une carrière hors normes.'};
-  if(score>=110) return {letter:'A', flavor:'Un grand nom du circuit.'};
-  if(score>=60) return {letter:'B', flavor:'Une très belle carrière.'};
-  if(score>=25) return {letter:'C', flavor:'Une carrière solide sur le circuit.'};
-  if(score>=8) return {letter:'D', flavor:'Modeste, mais un rêve vécu.'};
-  return {letter:'E', flavor:'Le circuit ne vous aura pas gardé.'};
+  let letter;
+  if(score>=180) letter='S';
+  else if(score>=110) letter='A';
+  else if(score>=60) letter='B';
+  else if(score>=25) letter='C';
+  else if(score>=8) letter='D';
+  else letter='E';
+  return { letter, flavor: choose(RATING_FLAVORS[letter]) };
+}
+function careerNarrative(p){
+  const totalTitles = Object.values(p.titles).reduce((a,b)=>a+b,0);
+  const parts = [];
+  parts.push(`${p.name}, ${p.nation.label}, aura passé ${p.seasonsPlayed} saison${p.seasonsPlayed>1?'s':''} sur le circuit avec un style ${p.style.label.toLowerCase()}.`);
+  if(p.titles.slam>=1){ parts.push(p.wonHomeSlam ? 'Le sommet a été atteint jusque devant son propre public, sur son tournoi national.' : 'Le Grand Chelem aura été conquis, au moins une fois.'); }
+  else if(p.bestRank<=50){ parts.push(`Le top ${p.bestRank<=10?'10':'50'} mondial aura été approché de très près, sans jamais soulever de trophée majeur.`); }
+  else if(totalTitles>0){ parts.push('Les titres sont restés modestes, mais bien réels.'); }
+  else { parts.push('Les titres n\'auront jamais suivi, malgré les efforts.'); }
+  if(p.injuries.length>=3){ parts.push('Le corps aura payé cher cette carrière, entre blessures et rééducations.'); }
+  else if(p.injuries.length===0){ parts.push('Un corps qui aura tenu bon, saison après saison.'); }
+  return parts.join(' ');
 }
 function computeBadges(p){
   const b = [];
@@ -802,6 +908,9 @@ function computeBadges(p){
   if(totalTitles===0 && p.seasonsPlayed>=10) b.push({h:'Pour l\'expérience', d:'Une longue carrière sans trophée.'});
   if(p.injuries.length>=4) b.push({h:'Corps de guerrier', d:'Quatre blessures ou plus, sans jamais abandonner.'});
   if(p.money>=5000000) b.push({h:'Fortune du circuit', d:'Plus de 5 millions d\'euros de gains.'});
+  if(p.wonHomeSlam) b.push({h:'Enfant du pays', d:'Un titre du Grand Chelem remporté devant votre public.'});
+  if(p.slamEligible && p.titles.slam===0) b.push({h:'Qualifié, jamais couronné', d:'Le Grand Chelem vous a ouvert ses portes, sans jamais céder son trophée.'});
+  if(!p.slamEligible) b.push({h:'Resté loin des grandes scènes', d:'Le Grand Chelem ne vous aura jamais été accessible.'});
   if(!b.length) b.push({h:'Une carrière sur le circuit', d:'Chaque saison a été une bataille.'});
   return b;
 }
@@ -817,7 +926,7 @@ function render(){
 function renderIntro(){
   app.innerHTML = `
     <div class="hero">
-      <div class="ball-hero">${BALL_ICON(52)}</div>
+      <div class="hero-illustration">${COURT_ILLUSTRATION(360,190)}</div>
       <h1>Set <span>Point</span></h1>
       <p>Votre carrière. Votre classement. Votre histoire.</p>
       <button class="btn" onclick="goToCreation()">Commencer une carrière</button>
@@ -1091,7 +1200,10 @@ function renderStage(){
     const run = p.seasonRun; const cur = run.current;
     const colors = tournamentColors(cur.tier, cur.slamId);
     stage.style.background = colors.light;
-    const stageLabel = (cur.roundIndex === cur.totalRounds-1) ? 'Finale' : 'Demi-finale';
+    const isFinal = cur.roundIndex === cur.totalRounds-1;
+    const stageLabel = isFinal ? 'Finale' : 'Demi-finale';
+    const intro = choose(isFinal ? MATCH_INTROS_FINAL : MATCH_INTROS_SEMI);
+    if(!cur.tacticOptions) cur.tacticOptions = pickTactics(3);
     stage.innerHTML = `
       <div class="tourn-banner" style="background:${colors.primary};">
         <div class="tourn-banner-name">${tournamentLabel(cur.tier, cur.slamId)}</div>
@@ -1099,11 +1211,11 @@ function renderStage(){
       </div>
       <div class="eyebrow" style="margin-top:14px;">${stageLabel}</div>
       <div class="stage-h">Quelle tactique adopter ?</div>
-      <div class="stage-p">Forme : ${Math.round(p.energy)} · Mental : ${Math.round(p.stats.mental)}</div>
+      <div class="stage-p"><i>${intro}</i><br>Forme : ${Math.round(p.energy)} · Mental : ${Math.round(p.stats.mental)}</div>
       <div class="choices" id="tacticWrap"></div>
     `;
     const wrap = document.getElementById('tacticWrap');
-    MATCH_TACTICS.forEach(t=>{
+    cur.tacticOptions.forEach(t=>{
       const btn = document.createElement('button');
       btn.className = 'choice';
       btn.style.borderLeft = `3px solid ${colors.primary}`;
@@ -1155,9 +1267,22 @@ function renderStage(){
     `;
     document.getElementById('nextSeasonBtn').onclick = ()=>{
       p.season++; p.age++;
-      p.phase = 'event';
+      if(p.pendingSlamQualified){ p.pendingSlamQualified = false; p.phase = 'slam_qualified'; }
+      else { p.phase = 'event'; }
       render();
     };
+
+  } else if(p.phase === 'slam_qualified'){
+    stage.style.background = '';
+    stage.innerHTML = `
+      <div class="qualif-banner">
+        <div class="qualif-trophy">${TROPHY_ICON(60)}</div>
+        <div class="qualif-title">Qualifié pour le Grand Chelem !</div>
+        <div class="qualif-text">Classé #${p.rank}, ${p.name} peut désormais s'inscrire aux quatre levées du Grand Chelem : Open d'Australie, Roland-Garros, Wimbledon et US Open.</div>
+      </div>
+      <div class="actions"><button class="btn" id="contQualifBtn">Continuer</button></div>
+    `;
+    document.getElementById('contQualifBtn').onclick = ()=>{ p.phase = 'event'; render(); };
   }
 }
 
@@ -1168,7 +1293,8 @@ function renderCalendarPhase(){
   stage.innerHTML = `
     <div class="eyebrow">Saison ${p.season}</div>
     <div class="stage-h">Composez votre saison</div>
-    <div class="stage-p">Classement actuel : #${p.rank}. Choisissez le rythme des petits tournois, puis ajoutez les grands rendez-vous que vous voulez disputer — chacun rallonge la saison.</div>
+    <div class="stage-p">Classement actuel : #${p.rank}. Choisissez le rythme des petits tournois, puis ajoutez les grands rendez-vous que vous voulez disputer — chacun rallonge la saison.
+    ${p.slamEligible ? '' : `<br><span style="color:var(--muted);">Le Grand Chelem se débloque sous le rang #${SLAM_ELIGIBLE_RANK}.</span>`}</div>
     <div class="eyebrow" style="margin-top:6px;">Calendrier de base</div>
     <div class="choices" id="calWrap"></div>
     <div class="eyebrow" style="margin-top:18px;">Grands tournois</div>
@@ -1189,11 +1315,14 @@ function renderCalendarPhase(){
   const bigWrap = document.getElementById('bigWrap');
   SLAMS.forEach(s=>{
     const sel = !!calendarChoice.slams[s.id];
+    const locked = !p.slamEligible;
     const d = document.createElement('div');
-    d.className = 'opt' + (sel ? ' sel' : '');
-    d.style.borderLeft = `4px solid ${s.colors.primary}`;
-    d.innerHTML = `<div class="h">${s.label}</div><div class="d">${s.surface} · ${s.place}</div>`;
-    d.onclick = ()=>{ calendarChoice.slams[s.id] = !calendarChoice.slams[s.id]; renderCalendarPhase(); };
+    d.className = 'opt' + (sel ? ' sel' : '') + (locked ? ' locked' : '');
+    d.style.borderLeft = `4px solid ${locked ? '#C7D0C4' : s.colors.primary}`;
+    d.innerHTML = locked
+      ? `<div class="h">${s.label} 🔒</div><div class="d">Débloqué sous le rang #${SLAM_ELIGIBLE_RANK}</div>`
+      : `<div class="h">${s.label}</div><div class="d">${s.surface} · ${s.place}</div>`;
+    if(!locked){ d.onclick = ()=>{ calendarChoice.slams[s.id] = !calendarChoice.slams[s.id]; renderCalendarPhase(); }; }
     bigWrap.appendChild(d);
   });
 
@@ -1243,12 +1372,14 @@ function renderEnd(){
 
     <div class="card">
       <div class="rating">
+        <div class="rating-bg">${TROPHY_ICON(120)}</div>
         <div class="letter">${rating.letter}</div>
         <div class="flavor">${rating.flavor}</div>
         <div class="score">Score : ${score}</div>
       </div>
 
       <div class="stage-h">${p.name} — bilan</div>
+      <div class="stage-p">${careerNarrative(p)}</div>
       <div class="recap-row"><span class="l">Titres du Grand Chelem</span><span class="r gold">${p.titles.slam}</span></div>
       <div class="recap-row"><span class="l">Titres Masters 1000</span><span class="r">${p.titles.masters}</span></div>
       <div class="recap-row"><span class="l">Titres ATP 500</span><span class="r">${p.titles.atp500}</span></div>
